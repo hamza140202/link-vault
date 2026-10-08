@@ -71,6 +71,7 @@ fun HomeScreen(
     val items by viewModel.items.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedFilter by viewModel.selectedFilter.collectAsState()
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
     val stats by viewModel.stats.collectAsState()
     val context = LocalContext.current
 
@@ -92,15 +93,14 @@ fun HomeScreen(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Surface(
-                        color = IndigoPrimary,
+                        color = Color.Transparent,
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.size(36.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Bookmark,
-                            contentDescription = "Logo",
-                            tint = Color.White,
-                            modifier = Modifier.padding(8.dp)
+                        com.linkvault.app.ui.components.MomoMascotView(
+                            size = 36.dp,
+                            animate = true,
+                            holdingCard = true
                         )
                     }
                     Spacer(modifier = Modifier.width(10.dp))
@@ -144,6 +144,19 @@ fun HomeScreen(
                     .padding(horizontal = 16.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                if (selectedCategory != null) {
+                    item {
+                        FilterChip(
+                            selected = true,
+                            onClick = { viewModel.setCategory(null) },
+                            label = { Text("📁 $selectedCategory  ✕") },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = IndigoPrimary,
+                                selectedLabelColor = Color.White
+                            )
+                        )
+                    }
+                }
                 val filters = listOf(
                     Pair(FilterMode.ALL, "All"),
                     Pair(FilterMode.FAVORITES, "Favorites"),

@@ -267,11 +267,9 @@ fun EmptyStateView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            imageVector = Icons.Filled.Bookmark,
-            contentDescription = null,
-            tint = Slate400,
-            modifier = Modifier.size(48.dp)
+        MomoMascotView(
+            size = 96.dp,
+            animate = true
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
