@@ -1,8 +1,13 @@
 package com.linkvault.app.ui.screens
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,19 +21,33 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,6 +57,7 @@ import com.linkvault.app.ui.components.EmptyStateView
 import com.linkvault.app.ui.components.LinkCard
 import com.linkvault.app.ui.components.SearchBarView
 import com.linkvault.app.ui.theme.IndigoPrimary
+import com.linkvault.app.ui.theme.Slate400
 import com.linkvault.app.ui.theme.Slate500
 import com.linkvault.app.ui.viewmodel.FilterMode
 import com.linkvault.app.ui.viewmodel.VaultViewModel
@@ -54,129 +74,247 @@ fun HomeScreen(
     val stats by viewModel.stats.collectAsState()
     val context = LocalContext.current
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(top = 8.dp)
-    ) {
-        // App Header
-        Row(
+    var showAddLinkDialog by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .fillMaxSize()
+                .padding(top = 8.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // App Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        color = IndigoPrimary,
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Bookmark,
+                            contentDescription = "Logo",
+                            tint = Color.White,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            text = "MomoStack",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Local-First Capture",
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                            color = Slate500
+                        )
+                    }
+                }
+
                 Surface(
-                    color = IndigoPrimary,
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
-                    modifier = Modifier.size(36.dp)
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(16.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.Bookmark,
-                        contentDescription = "Logo",
-                        tint = androidx.compose.ui.graphics.Color.White,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(10.dp))
-                Column {
                     Text(
-                        text = "MomoStack",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "Local-First Capture",
-                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
-                        color = Slate500
+                        text = "${stats.totalLinks} saved",
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
 
-            Surface(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
-            ) {
-                Text(
-                    text = "${stats.totalLinks} saved",
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        // Search Bar
-        SearchBarView(
-            query = searchQuery,
-            onQueryChange = viewModel::onSearchQueryChanged
-        )
-
-        // Filter Pills
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            val filters = listOf(
-                Pair(FilterMode.ALL, "All"),
-                Pair(FilterMode.FAVORITES, "Favorites"),
-                Pair(FilterMode.NOTES, "Notes"),
-                Pair(FilterMode.ARCHIVED, "Archived")
+            // Search Bar
+            SearchBarView(
+                query = searchQuery,
+                onQueryChange = viewModel::onSearchQueryChanged
             )
-            items(filters) { (mode, title) ->
-                val isSelected = selectedFilter == mode
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { viewModel.setFilter(mode) },
-                    label = { Text(title) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = IndigoPrimary,
-                        selectedLabelColor = androidx.compose.ui.graphics.Color.White
+
+            // Filter Pills
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                val filters = listOf(
+                    Pair(FilterMode.ALL, "All"),
+                    Pair(FilterMode.FAVORITES, "Favorites"),
+                    Pair(FilterMode.NOTES, "Notes"),
+                    Pair(FilterMode.ARCHIVED, "Archived")
+                )
+                items(filters) { (mode, title) ->
+                    val isSelected = selectedFilter == mode
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { viewModel.setFilter(mode) },
+                        label = { Text(title) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = IndigoPrimary,
+                            selectedLabelColor = Color.White
+                        )
                     )
-                )
+                }
             }
-        }
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        // Main List or Empty State
-        if (items.isEmpty()) {
-            EmptyStateView(
-                message = if (searchQuery.isNotBlank()) "No matching results" else "No saved links yet",
-                subMessage = if (searchQuery.isNotBlank())
-                    "Try another keyword or domain search."
-                else
-                    "Share any link from Chrome, YouTube, or Twitter to save it here instantly.",
-                modifier = Modifier.weight(1f)
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(items, key = { it.id }) { item ->
-                    LinkCard(
-                        item = item,
-                        onClick = { onItemClick(item) },
-                        onToggleFavorite = { viewModel.toggleFavorite(item) },
-                        onArchive = { viewModel.toggleArchive(item) },
-                        onDelete = { viewModel.deleteItem(item.id) },
-                        onOpenBrowser = {
-                            if (item.url.isNotBlank()) {
-                                try {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(item.url))
-                                    context.startActivity(intent)
-                                } catch (_: Exception) {}
+            // Main List or Empty State
+            if (items.isEmpty()) {
+                EmptyStateView(
+                    message = if (searchQuery.isNotBlank()) "No matching results" else "No saved links yet",
+                    subMessage = if (searchQuery.isNotBlank())
+                        "Try another keyword or domain search."
+                    else
+                        "Share any link from Chrome, YouTube, or tap the + button to save a URL manually.",
+                    modifier = Modifier.weight(1f)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 80.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(items, key = { it.id }) { item ->
+                        LinkCard(
+                            item = item,
+                            onClick = { onItemClick(item) },
+                            onToggleFavorite = { viewModel.toggleFavorite(item) },
+                            onArchive = { viewModel.toggleArchive(item) },
+                            onDelete = { viewModel.deleteItem(item.id) },
+                            onOpenBrowser = {
+                                if (item.url.isNotBlank()) {
+                                    try {
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(item.url))
+                                        context.startActivity(intent)
+                                    } catch (_: Exception) {}
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
+        }
+
+        // Floating Action Button (+) for manual URL capture
+        FloatingActionButton(
+            onClick = { showAddLinkDialog = true },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            containerColor = IndigoPrimary,
+            contentColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Icon(Icons.Filled.Add, contentDescription = "Add Link Manually", modifier = Modifier.size(24.dp))
+        }
+
+        // Add Link Dialog
+        if (showAddLinkDialog) {
+            AddLinkDialog(
+                onDismiss = { showAddLinkDialog = false },
+                onSave = { url, title, notes ->
+                    viewModel.saveDirectLink(url, title, notes)
+                    Toast.makeText(context, "Link saved to MomoStack", Toast.LENGTH_SHORT).show()
+                    showAddLinkDialog = false
+                }
+            )
         }
     }
+}
+
+@Composable
+fun AddLinkDialog(
+    onDismiss: () -> Unit,
+    onSave: (url: String, title: String?, notes: String?) -> Unit
+) {
+    val context = LocalContext.current
+    var urlInput by remember { mutableStateOf("") }
+    var titleInput by remember { mutableStateOf("") }
+    var notesInput by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Save Link to MomoStack", fontWeight = FontWeight.Bold) },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = urlInput,
+                    onValueChange = { urlInput = it },
+                    placeholder = { Text("https://example.com/...", color = Slate400) },
+                    label = { Text("URL") },
+                    singleLine = true,
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            val clip = clipboard.primaryClip
+                            if (clip != null && clip.itemCount > 0) {
+                                val text = clip.getItemAt(0).coerceToText(context).toString().trim()
+                                if (text.isNotBlank()) {
+                                    urlInput = text
+                                    Toast.makeText(context, "Pasted from clipboard", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }) {
+                            Icon(Icons.Filled.Assignment, contentDescription = "Paste", tint = IndigoPrimary)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = titleInput,
+                    onValueChange = { titleInput = it },
+                    placeholder = { Text("Leave blank to auto-detect", color = Slate400) },
+                    label = { Text("Title (Optional)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = notesInput,
+                    onValueChange = { notesInput = it },
+                    placeholder = { Text("Add notes, tags, or thoughts...", color = Slate400) },
+                    label = { Text("Personal Notes (Optional)") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp),
+                    shape = RoundedCornerShape(8.dp)
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (urlInput.isNotBlank()) {
+                        onSave(urlInput, titleInput.takeIf { it.isNotBlank() }, notesInput.takeIf { it.isNotBlank() })
+                    } else {
+                        Toast.makeText(context, "Please enter a valid URL", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = IndigoPrimary),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("Save Link")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }

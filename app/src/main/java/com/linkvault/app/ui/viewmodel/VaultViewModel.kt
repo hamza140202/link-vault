@@ -117,6 +117,32 @@ class VaultViewModel(
         }
     }
 
+    fun saveDirectLink(rawUrl: String, title: String? = null, notes: String? = null) {
+        if (rawUrl.isBlank()) return
+        val extracted = com.linkvault.app.util.UrlExtractor.extract(rawUrl)
+        val urlToUse = extracted.url ?: rawUrl.trim()
+        val domain = extracted.domain ?: com.linkvault.app.util.UrlExtractor.extractDomain(urlToUse)
+        val autoTitle = title?.takeIf { it.isNotBlank() } ?: domain ?: urlToUse
+        val itemId = java.util.UUID.randomUUID().toString()
+
+        val item = LinkItem(
+            id = itemId,
+            url = urlToUse,
+            normalizedUrl = extracted.normalizedUrl,
+            title = autoTitle,
+            domain = domain,
+            notes = notes?.takeIf { it.isNotBlank() },
+            category = com.linkvault.app.classifier.AutoClassifier.classify(domain, autoTitle, notes),
+            status = com.linkvault.app.data.model.ProcessingStatus.PENDING
+        )
+
+        viewModelScope.launch {
+            repository.saveItem(item)
+            com.linkvault.app.worker.EnrichmentScheduler.scheduleEnrichment(LinkVaultApp.instance, itemId)
+            refreshStats()
+        }
+    }
+
     fun saveDirectNote(noteContent: String, title: String? = null) {
         if (noteContent.isBlank()) return
         viewModelScope.launch {
