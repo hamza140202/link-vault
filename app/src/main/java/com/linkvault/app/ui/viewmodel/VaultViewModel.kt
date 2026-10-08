@@ -117,6 +117,21 @@ class VaultViewModel(
         }
     }
 
+    fun createCategory(name: String, colorHex: String = "#4F46E5", iconName: String = "folder") {
+        val trimmed = name.trim()
+        if (trimmed.isBlank()) return
+        val entity = com.linkvault.app.data.entity.CategoryEntity(
+            id = java.util.UUID.randomUUID().toString(),
+            name = trimmed,
+            colorHex = colorHex,
+            iconName = iconName,
+            isSystem = false
+        )
+        viewModelScope.launch {
+            repository.addCategory(entity)
+        }
+    }
+
     fun saveDirectLink(rawUrl: String, title: String? = null, notes: String? = null) {
         if (rawUrl.isBlank()) return
         val extracted = com.linkvault.app.util.UrlExtractor.extract(rawUrl)
