@@ -134,7 +134,7 @@ fun SettingsScreen(
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "LinkVault backups use standardized, versioned JSON that you can inspect, store, or migrate anywhere.",
+                    text = "MomoStack backups use standardized, versioned JSON that you can inspect, store, or migrate anywhere.",
                     style = MaterialTheme.typography.bodySmall,
                     color = Slate500
                 )
@@ -150,7 +150,7 @@ fun SettingsScreen(
                             coroutineScope.launch {
                                 val json = viewModel.exportBackupJson()
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                clipboard.setPrimaryClip(ClipData.newPlainText("LinkVault Backup", json))
+                                clipboard.setPrimaryClip(ClipData.newPlainText("MomoStack Backup", json))
                                 Toast.makeText(context, "Backup JSON copied to clipboard (${json.length} bytes)", Toast.LENGTH_LONG).show()
                             }
                         },
@@ -218,7 +218,7 @@ fun SettingsScreen(
             text = {
                 Column {
                     Text(
-                        text = "Paste your LinkVault JSON backup archive below. Existing items will be merged safely without deleting notes.",
+                        text = "Paste your MomoStack JSON backup archive below. Existing items will be merged safely without deleting notes.",
                         style = MaterialTheme.typography.bodySmall,
                         color = Slate500
                     )

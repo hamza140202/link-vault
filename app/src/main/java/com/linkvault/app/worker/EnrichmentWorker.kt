@@ -37,7 +37,7 @@ class EnrichmentWorker(
         try {
             val request = Request.Builder()
                 .url(item.url)
-                .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36 LinkVault/1.0")
+                .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36 MomoStack/1.0")
                 .build()
 
             val response = httpClient.newCall(request).execute()

@@ -1,8 +1,8 @@
-# LinkVault 🔒📱
+# MomoStack 🥟📚
 
 > **Capture anything → Save it instantly → Automatically organize it → Return to it later.**
 
-LinkVault is a high-performance, local-first Android link and note capture library built with Jetpack Compose, Material 3, AndroidX Room SQLite, and WorkManager.
+MomoStack is a high-performance, local-first Android link and note capture library built with Jetpack Compose, Material 3, AndroidX Room SQLite, and WorkManager.
 
 ---
 

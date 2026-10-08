@@ -82,7 +82,7 @@ class ShareCaptureActivity : ComponentActivity() {
 
             Toast.makeText(
                 applicationContext,
-                if (extracted.url != null) "Saved to LinkVault" else "Note captured in LinkVault",
+                if (extracted.url != null) "Saved to MomoStack" else "Note captured in MomoStack",
                 Toast.LENGTH_SHORT
             ).show()
 

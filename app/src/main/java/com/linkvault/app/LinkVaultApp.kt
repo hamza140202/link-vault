@@ -29,7 +29,7 @@ class LinkVaultApp : Application() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 NOTIFICATION_CHANNEL_ID,
-                "Link Capture & Enrichment",
+                "MomoStack Capture & Enrichment",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
                 description = "Notifications confirming captured links and completed enrichment."
