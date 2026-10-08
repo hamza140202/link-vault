@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -89,6 +90,10 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     var activeSubscreen by remember { mutableStateOf(SettingsSubscreen.MAIN) }
+
+    BackHandler(enabled = activeSubscreen != SettingsSubscreen.MAIN) {
+        activeSubscreen = SettingsSubscreen.MAIN
+    }
 
     when (activeSubscreen) {
         SettingsSubscreen.MAIN -> MainSettingsView(
@@ -188,7 +193,7 @@ fun MainSettingsView(
                         color = Slate500
                     )
                     Text(
-                        text = "Version 1.0.4",
+                        text = "Version 1.0.5",
                         style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                         color = Slate400
                     )
@@ -261,7 +266,7 @@ fun MainSettingsView(
             icon = Icons.Outlined.Info,
             title = "About MomoStack",
             subtitle = "Version, licenses, credits",
-            onClick = { Toast.makeText(context, "MomoStack v1.0.4", Toast.LENGTH_SHORT).show() }
+            onClick = { Toast.makeText(context, "MomoStack v1.0.5", Toast.LENGTH_SHORT).show() }
         )
         SettingsRowItem(
             icon = Icons.Outlined.HelpOutline,

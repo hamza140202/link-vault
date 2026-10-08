@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.BorderStroke
@@ -185,6 +186,9 @@ fun MainAppScaffold(viewModel: VaultViewModel) {
         }
     ) { innerPadding ->
         if (selectedItemForDetail != null) {
+            BackHandler {
+                selectedItemForDetail = null
+            }
             DetailScreen(
                 item = selectedItemForDetail!!,
                 viewModel = viewModel,

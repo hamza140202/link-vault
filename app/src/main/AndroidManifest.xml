@@ -26,26 +26,16 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- Share Target in MainActivity for guaranteed OEM compatibility -->
-            <intent-filter android:label="@string/share_capture_label">
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/plain" />
-            </intent-filter>
-            <intent-filter android:label="@string/share_capture_label">
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/*" />
-            </intent-filter>
         </activity>
 
-        <!-- Fast, Headless Share Target Activity -->
+        <!-- Fast, Headless Share Target Activity (Snaptube-style silent capture) -->
         <activity
             android:name=".ui.ShareCaptureActivity"
             android:label="@string/share_capture_label"
             android:icon="@mipmap/ic_launcher"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:excludeFromRecents="true"
+            android:noHistory="true"
             android:exported="true">
             <intent-filter android:label="@string/share_capture_label">
                 <action android:name="android.intent.action.SEND" />

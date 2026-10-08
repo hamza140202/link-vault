@@ -1,11 +1,14 @@
 package com.linkvault.app.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,9 +18,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.OpenInBrowser
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarBorder
@@ -35,10 +40,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.linkvault.app.data.model.LinkItem
 import com.linkvault.app.ui.theme.IndigoPrimary
 import com.linkvault.app.ui.theme.Slate400
@@ -60,167 +67,262 @@ fun LinkCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(16.dp))
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Header: Domain, Time, Favorite
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+            // Fixed Thumbnail Box (80x60dp, 4:3, radius 12dp)
+            CardThumbnailBox(item = item)
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Card Content Wrap
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                        Text(
-                            text = item.domain ?: "link",
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                            style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    Text(
-                        text = formatRelativeTime(item.createdAt),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Slate400
-                    )
-                }
-
-                IconButton(
-                    onClick = onToggleFavorite,
-                    modifier = Modifier.size(32.dp)
+                // Top row: Domain + Relative Time + Favorite Star
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Icon(
-                        imageVector = if (item.isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
-                        contentDescription = "Favorite",
-                        tint = if (item.isFavorite) Color(0xFFEAB308) else Slate400,
-                        modifier = Modifier.size(20.dp)
+                    Text(
+                        text = (item.domain ?: "note").lowercase(),
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp, fontWeight = FontWeight.SemiBold),
+                        color = Slate500,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = formatRelativeTime(item.createdAt),
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                            color = Slate400,
+                            modifier = Modifier.padding(end = 4.dp)
+                        )
+
+                        IconButton(
+                            onClick = onToggleFavorite,
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (item.isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
+                                contentDescription = "Favorite",
+                                tint = if (item.isFavorite) Color(0xFFEAB308) else Slate400,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(2.dp))
 
-            // Title
-            Text(
-                text = item.title.ifBlank { item.url },
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            // Description / snippet if available
-            if (!item.description.isNullOrBlank()) {
-                Spacer(modifier = Modifier.height(4.dp))
+                // Title
                 Text(
-                    text = item.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
+                    text = item.title.ifBlank { item.url.ifBlank { "Untitled Note" } },
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, fontSize = 14.sp),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-            }
 
-            // Note snippet if attached
-            if (!item.notes.isNullOrBlank()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Description,
-                            contentDescription = "Note attached",
-                            tint = IndigoPrimary,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = item.notes,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Footer: Category badge & Actions
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = IndigoPrimary.copy(alpha = 0.1f)
-                ) {
+                // Description / Note Snippet
+                val snippetText = item.description?.takeIf { it.isNotBlank() } ?: item.notes?.takeIf { it.isNotBlank() }
+                if (!snippetText.isNullOrBlank()) {
                     Text(
-                        text = item.category,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp),
-                        color = IndigoPrimary,
-                        fontWeight = FontWeight.Medium
+                        text = snippetText,
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                        color = Slate500,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = onOpenBrowser,
-                        modifier = Modifier.size(32.dp)
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Bottom row: Category Pill + Quick Actions
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    val tagBg = when (item.category.lowercase()) {
+                        "reading" -> Color(0xFFECFDF5)
+                        "media" -> Color(0xFFFFF1F2)
+                        "design" -> Color(0xFFFFFBEB)
+                        "work" -> Color(0xFFEFF6FF)
+                        else -> MaterialTheme.colorScheme.surfaceVariant
+                    }
+                    val tagText = when (item.category.lowercase()) {
+                        "reading" -> Color(0xFF065F46)
+                        "media" -> Color(0xFF9F1239)
+                        "design" -> Color(0xFF92400E)
+                        "work" -> Color(0xFF1E40AF)
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = tagBg
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.OpenInBrowser,
-                            contentDescription = "Open in browser",
-                            tint = Slate500,
-                            modifier = Modifier.size(18.dp)
+                        Text(
+                            text = item.category,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                            color = tagText
                         )
                     }
-                    IconButton(
-                        onClick = onArchive,
-                        modifier = Modifier.size(32.dp)
-                    ) {
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (item.url.isNotBlank()) {
+                            IconButton(
+                                onClick = onOpenBrowser,
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.OpenInBrowser,
+                                    contentDescription = "Open in browser",
+                                    tint = Slate400,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                        IconButton(
+                            onClick = onArchive,
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Archive,
+                                contentDescription = "Archive",
+                                tint = Slate400,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                        IconButton(
+                            onClick = onDelete,
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Delete,
+                                contentDescription = "Delete",
+                                tint = Slate400,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CardThumbnailBox(
+    item: LinkItem,
+    modifier: Modifier = Modifier
+) {
+    val isNote = item.url.isBlank() || !item.notes.isNullOrBlank() && item.url.isBlank()
+    val isYouTube = item.domain?.contains("youtube") == true || item.domain?.contains("youtu.be") == true
+    val isGitHub = item.domain?.contains("github") == true
+
+    Box(
+        modifier = modifier
+            .size(width = 80.dp, height = 60.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(
+                when {
+                    isNote -> Color(0xFFFEF3C7)
+                    isGitHub -> Color(0xFF181717)
+                    else -> MaterialTheme.colorScheme.surfaceVariant
+                }
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        if (!item.previewImageUrl.isNullOrBlank()) {
+            AsyncImage(
+                model = item.previewImageUrl,
+                contentDescription = item.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+            if (isYouTube) {
+                // Red YouTube badge in corner (matching index.html)
+                Surface(
+                    shape = RoundedCornerShape(4.dp),
+                    color = Color(0xFFFF0000),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(4.dp)
+                        .size(width = 20.dp, height = 14.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.Filled.Archive,
-                            contentDescription = "Archive",
-                            tint = Slate500,
-                            modifier = Modifier.size(18.dp)
+                            imageVector = Icons.Filled.PlayArrow,
+                            contentDescription = "Video",
+                            tint = Color.White,
+                            modifier = Modifier.size(12.dp)
                         )
                     }
-                    IconButton(
-                        onClick = onDelete,
-                        modifier = Modifier.size(32.dp)
+                }
+            }
+        } else {
+            // Semantic fallback icons matching index.html
+            when {
+                isNote -> {
+                    Icon(
+                        imageVector = Icons.Filled.Description,
+                        contentDescription = "Note",
+                        tint = Color(0xFFD97706),
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
+                isGitHub -> {
+                    Icon(
+                        imageVector = Icons.Filled.Code,
+                        contentDescription = "GitHub",
+                        tint = Color.White,
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
+                isYouTube -> {
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = Color(0xFFFF0000),
+                        modifier = Modifier.size(width = 36.dp, height = 24.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Delete,
-                            contentDescription = "Delete",
-                            tint = Slate500,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Filled.PlayArrow,
+                                contentDescription = "YouTube",
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
+                }
+                else -> {
+                    val domainInitial = item.domain?.firstOrNull { it.isLetter() }?.uppercaseChar()?.toString()
+                        ?: item.title.firstOrNull { it.isLetter() }?.uppercaseChar()?.toString()
+                        ?: "L"
+                    Text(
+                        text = domainInitial,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = IndigoPrimary
+                    )
                 }
             }
         }

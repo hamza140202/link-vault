@@ -19,9 +19,14 @@ import java.util.UUID
 class ShareCaptureActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        overridePendingTransition(0, 0)
         super.onCreate(savedInstanceState)
-
         handleIncomingShareIntent(intent)
+    }
+
+    override fun finish() {
+        super.finish()
+        overridePendingTransition(0, 0)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -82,11 +87,11 @@ class ShareCaptureActivity : ComponentActivity() {
 
             Toast.makeText(
                 applicationContext,
-                if (extracted.url != null) "Saved to MomoStack" else "Note captured in MomoStack",
+                if (extracted.url != null) "🥟 Saved to MomoStack" else "🥟 Note captured in MomoStack",
                 Toast.LENGTH_SHORT
             ).show()
 
-            finishAffinity()
+            finishAndRemoveTask()
         }
     }
 }
