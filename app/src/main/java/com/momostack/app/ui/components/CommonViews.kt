@@ -203,7 +203,7 @@ fun LinkCard(
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         // 1. Refresh icon: visible if metadata/thumbnail is not yet enriched or failed
-                        val needsEnrichment = item.url.isNotBlank() && (item.previewImageUrl.isNullOrBlank() || item.status == "PENDING" || item.status == "FAILED")
+                        val needsEnrichment = item.url.isNotBlank() && (item.previewImageUrl.isNullOrBlank() || item.status != com.momostack.app.data.model.ProcessingStatus.COMPLETED)
                         if (needsEnrichment && onRefresh != null) {
                             IconButton(
                                 onClick = onRefresh,

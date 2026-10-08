@@ -239,7 +239,7 @@ class VaultViewModel(
         viewModelScope.launch {
             val all = repository.getActiveItems().firstOrNull() ?: return@launch
             val pendingOrMissing = all.filter {
-                it.url.isNotBlank() && (it.previewImageUrl.isNullOrBlank() || it.status == com.momostack.app.data.model.ProcessingStatus.PENDING.name || it.status == com.momostack.app.data.model.ProcessingStatus.FAILED.name)
+                it.url.isNotBlank() && (it.previewImageUrl.isNullOrBlank() || it.status != com.momostack.app.data.model.ProcessingStatus.COMPLETED)
             }
             pendingOrMissing.forEach { item ->
                 com.momostack.app.worker.EnrichmentScheduler.scheduleEnrichment(LinkVaultApp.instance, item.id)

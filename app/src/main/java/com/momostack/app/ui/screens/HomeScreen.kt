@@ -190,7 +190,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             // Refresh banner for un-enriched or pending items
-            val pendingCount = items.count { it.url.isNotBlank() && (it.previewImageUrl.isNullOrBlank() || it.status == "PENDING" || it.status == "FAILED") }
+            val pendingCount = items.count { it.url.isNotBlank() && (it.previewImageUrl.isNullOrBlank() || it.status != com.momostack.app.data.model.ProcessingStatus.COMPLETED) }
             if (pendingCount > 0) {
                 Surface(
                     shape = RoundedCornerShape(10.dp),
