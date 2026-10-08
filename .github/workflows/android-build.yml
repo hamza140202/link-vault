@@ -1,0 +1,54 @@
+name: Android CI Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & Test APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Run Unit Tests
+        run: gradle test --stacktrace
+
+      - name: Build Debug & Release APK
+        run: gradle assembleDebug assembleRelease --stacktrace
+
+      - name: Compute SHA-256 Checksums
+        run: |
+          mkdir -p build-output
+          cp app/build/outputs/apk/debug/*.apk build-output/ || true
+          cp app/build/outputs/apk/release/*.apk build-output/ || true
+          cd build-output
+          sha256sum *.apk > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Upload APK Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linkvault-apks
+          path: build-output/
+          retention-days: 30

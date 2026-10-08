@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Clean Vault / Bookmark Symbol in White -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M38,30h32c3.31,0 6,2.69 6,6v42l-22,-10l-22,10v-42c0,-3.31 2.69,-6 6,-6z" />
+    <path
+        android:fillColor="#4F46E5"
+        android:pathData="M54,42c-3.31,0 -6,2.69 -6,6c0,2.4 1.42,4.47 3.47,5.43v5.57h5.06v-5.57c2.05,-0.96 3.47,-3.03 3.47,-5.43c0,-3.31 -2.69,-6 -6,-6z" />
+</vector>
