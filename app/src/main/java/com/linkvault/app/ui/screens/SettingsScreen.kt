@@ -193,7 +193,7 @@ fun MainSettingsView(
                         color = Slate500
                     )
                     Text(
-                        text = "Version 1.0.6",
+                        text = "Version 1.0.7",
                         style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                         color = Slate400
                     )

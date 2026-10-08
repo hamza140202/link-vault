@@ -76,6 +76,7 @@ fun HomeScreen(
     val context = LocalContext.current
 
     var showAddLinkDialog by remember { mutableStateOf(false) }
+    var noteToEdit by remember { mutableStateOf<LinkItem?>(null) }
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(
@@ -196,16 +197,36 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(items, key = { it.id }) { item ->
+                        val hasUrl = item.url.isNotBlank() && (item.url.startsWith("http://") || item.url.startsWith("https://"))
                         LinkCard(
                             item = item,
-                            onClick = { onItemClick(item) },
+                            onClick = {
+                                if (hasUrl) {
+                                    try {
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(item.url)).apply {
+                                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        }
+                                        context.startActivity(intent)
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Could not open browser: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                        onItemClick(item)
+                                    }
+                                } else {
+                                    noteToEdit = item
+                                }
+                            },
+                            onLongClick = {
+                                onItemClick(item)
+                            },
                             onToggleFavorite = { viewModel.toggleFavorite(item) },
                             onArchive = { viewModel.toggleArchive(item) },
                             onDelete = { viewModel.deleteItem(item.id) },
                             onOpenBrowser = {
                                 if (item.url.isNotBlank()) {
                                     try {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(item.url))
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(item.url)).apply {
+                                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        }
                                         context.startActivity(intent)
                                     } catch (_: Exception) {}
                                 }
@@ -237,6 +258,22 @@ fun HomeScreen(
                     viewModel.saveDirectLink(url, title, notes)
                     Toast.makeText(context, "Link saved to MomoStack", Toast.LENGTH_SHORT).show()
                     showAddLinkDialog = false
+                }
+            )
+        }
+
+        // Note Viewer / Editor Dialog (when tapped directly)
+        if (noteToEdit != null) {
+            val currentNote = noteToEdit!!
+            NoteEditorDialog(
+                initialTitle = currentNote.title,
+                initialBody = currentNote.notes ?: "",
+                dialogTitle = "Edit Note",
+                onDismiss = { noteToEdit = null },
+                onSave = { _, updatedBody ->
+                    viewModel.updateNotes(currentNote.id, updatedBody)
+                    Toast.makeText(context, "Note updated", Toast.LENGTH_SHORT).show()
+                    noteToEdit = null
                 }
             )
         }

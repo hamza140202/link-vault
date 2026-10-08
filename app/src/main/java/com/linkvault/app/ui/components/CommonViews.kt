@@ -52,12 +52,16 @@ import com.linkvault.app.ui.theme.Slate400
 import com.linkvault.app.ui.theme.Slate500
 import java.text.SimpleDateFormat
 import java.util.Date
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import java.util.Locale
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LinkCard(
     item: LinkItem,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
     onToggleFavorite: () -> Unit,
     onArchive: () -> Unit,
     onDelete: () -> Unit,
@@ -68,7 +72,10 @@ fun LinkCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
