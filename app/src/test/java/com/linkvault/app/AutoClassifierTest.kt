@@ -10,7 +10,10 @@ class AutoClassifierTest {
     fun testDomainBasedClassification() {
         assertEquals("Development", AutoClassifier.classify("github.com", null, null))
         assertEquals("Development", AutoClassifier.classify("stackoverflow.com", null, null))
-        assertEquals("Entertainment", AutoClassifier.classify("youtube.com", null, null))
+        assertEquals("YouTube", AutoClassifier.classify("youtube.com", null, null))
+        assertEquals("Instagram", AutoClassifier.classify("instagram.com", null, null))
+        assertEquals("Twitter", AutoClassifier.classify("twitter.com", null, null))
+        assertEquals("Threads", AutoClassifier.classify("threads.net", null, null))
         assertEquals("Entertainment", AutoClassifier.classify("spotify.com", null, null))
         assertEquals("Shopping", AutoClassifier.classify("amazon.com", null, null))
         assertEquals("Finance", AutoClassifier.classify("bloomberg.com", null, null))

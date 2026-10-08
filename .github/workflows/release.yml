@@ -39,7 +39,9 @@ jobs:
       - name: Package Release Assets
         run: |
           mkdir -p release-assets
-          cp app/build/outputs/apk/release/*.apk release-assets/linkvault-v1.0.0.apk
+          TAG_VER="${{ github.event.inputs.version || github.ref_name }}"
+          cp app/build/outputs/apk/release/*.apk release-assets/linkvault-${TAG_VER}.apk
+          cp app/build/outputs/apk/release/*.apk release-assets/app-release.apk
           cd release-assets
           sha256sum *.apk > SHA256SUMS.txt
           cat SHA256SUMS.txt
