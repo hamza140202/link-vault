@@ -15,6 +15,7 @@ class BackupManagerTest {
     private val json = Json {
         prettyPrint = true
         ignoreUnknownKeys = true
+        encodeDefaults = true
     }
 
     @Test
