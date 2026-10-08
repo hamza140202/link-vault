@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -164,6 +167,8 @@ fun HomeScreen(
                     Pair(FilterMode.YOUTUBE, "▶️ YouTube"),
                     Pair(FilterMode.TWITTER, "𝕏 Twitter"),
                     Pair(FilterMode.THREADS, "🧵 Threads"),
+                    Pair(FilterMode.GITHUB, "🐙 GitHub"),
+                    Pair(FilterMode.HUGGINGFACE, "🤗 Hugging Face"),
                     Pair(FilterMode.FAVORITES, "Favorites"),
                     Pair(FilterMode.NOTES, "Notes"),
                     Pair(FilterMode.ARCHIVED, "Archived")
@@ -182,7 +187,52 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Refresh banner for un-enriched or pending items
+            val pendingCount = items.count { it.url.isNotBlank() && (it.previewImageUrl.isNullOrBlank() || it.status == "PENDING" || it.status == "FAILED") }
+            if (pendingCount > 0) {
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = IndigoPrimary.copy(alpha = 0.08f),
+                    border = BorderStroke(1.dp, IndigoPrimary.copy(alpha = 0.2f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .clickable {
+                            viewModel.refetchPendingItems()
+                            Toast.makeText(context, "Re-fetching $pendingCount pending items in background...", Toast.LENGTH_SHORT).show()
+                        }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Filled.Refresh,
+                                contentDescription = "Sync",
+                                tint = IndigoPrimary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "$pendingCount item(s) missing metadata / preview",
+                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        Text(
+                            text = "Tap to fetch ➔",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            color = IndigoPrimary
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
 
             // Main List or Empty State
             if (items.isEmpty()) {
@@ -191,6 +241,8 @@ fun HomeScreen(
                     FilterMode.YOUTUBE -> "No YouTube videos saved yet"
                     FilterMode.TWITTER -> "No Twitter / X links saved yet"
                     FilterMode.THREADS -> "No Threads links saved yet"
+                    FilterMode.GITHUB -> "No GitHub repositories saved yet"
+                    FilterMode.HUGGINGFACE -> "No Hugging Face models saved yet"
                     FilterMode.FAVORITES -> "No favorite links yet"
                     FilterMode.NOTES -> "No notes captured yet"
                     FilterMode.ARCHIVED -> "No archived links"
@@ -201,6 +253,8 @@ fun HomeScreen(
                     FilterMode.YOUTUBE -> "Share any video or short from YouTube to MomoStack to capture thumbnails instantly."
                     FilterMode.TWITTER -> "Share any post from X/Twitter to MomoStack to capture tweets and media."
                     FilterMode.THREADS -> "Share any post from Threads to MomoStack to save conversations."
+                    FilterMode.GITHUB -> "Share any GitHub repo to MomoStack to capture code previews, stars, and descriptions."
+                    FilterMode.HUGGINGFACE -> "Share any model, space, or dataset from Hugging Face to MomoStack to save rich previews."
                     else -> if (searchQuery.isNotBlank()) "Try another keyword or domain search." else "Share any link from Chrome, YouTube, Instagram or tap + to save manually."
                 }
                 EmptyStateView(
@@ -239,6 +293,10 @@ fun HomeScreen(
                             onToggleFavorite = { viewModel.toggleFavorite(item) },
                             onArchive = { viewModel.toggleArchive(item) },
                             onDelete = { viewModel.deleteItem(item.id) },
+                            onRefresh = {
+                                viewModel.refetchItem(item.id)
+                                Toast.makeText(context, "Re-fetching metadata for ${item.title.take(20)}...", Toast.LENGTH_SHORT).show()
+                            },
                             onOpenBrowser = {
                                 if (item.url.isNotBlank()) {
                                     try {

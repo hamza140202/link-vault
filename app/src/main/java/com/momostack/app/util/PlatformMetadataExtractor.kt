@@ -44,11 +44,22 @@ object PlatformMetadataExtractor {
         Pattern.CASE_INSENSITIVE
     )
 
+    private val GITHUB_PATTERN = Pattern.compile(
+        "github\\.com\\/([a-zA-Z0-9_.-]+)\\/([a-zA-Z0-9_.-]+)",
+        Pattern.CASE_INSENSITIVE
+    )
+
+    private val HUGGINGFACE_PATTERN = Pattern.compile(
+        "huggingface\\.co\\/(?:models\\/|spaces\\/|datasets\\/)?([a-zA-Z0-9_.-]+)\\/([a-zA-Z0-9_.-]+)",
+        Pattern.CASE_INSENSITIVE
+    )
+
     fun isSocialPlatform(url: String): Boolean {
         val lower = url.lowercase()
         return lower.contains("youtube.com") || lower.contains("youtu.be") ||
                lower.contains("twitter.com") || lower.contains("x.com") ||
-               lower.contains("instagram.com") || lower.contains("threads.net")
+               lower.contains("instagram.com") || lower.contains("threads.net") ||
+               lower.contains("github.com") || lower.contains("huggingface.co")
     }
 
     fun extract(url: String): PlatformMetadata? {
@@ -58,6 +69,8 @@ object PlatformMetadataExtractor {
             lower.contains("twitter.com") || lower.contains("x.com") -> extractTwitter(url)
             lower.contains("instagram.com") -> extractInstagram(url)
             lower.contains("threads.net") -> extractThreads(url)
+            lower.contains("github.com") -> extractGitHub(url)
+            lower.contains("huggingface.co") -> extractHuggingFace(url)
             else -> null
         }
     }
@@ -258,6 +271,153 @@ object PlatformMetadataExtractor {
             faviconUrl = "https://static.cdninstagram.com/rsrc.php/yD/r/5Ddg9uA_S5Q.ico",
             category = "Threads",
             domain = "threads.net"
+        )
+    }
+
+    private fun extractGitHub(url: String): PlatformMetadata {
+        val matcher = GITHUB_PATTERN.matcher(url)
+        var owner: String? = null
+        var repo: String? = null
+        if (matcher.find()) {
+            val candOwner = matcher.group(1)
+            val candRepo = matcher.group(2).removeSuffix(".git")
+            val nonRepoOwners = setOf("features", "topics", "collections", "trending", "explore", "pricing", "marketplace", "login", "signup", "settings", "notifications")
+            if (!nonRepoOwners.contains(candOwner.lowercase())) {
+                owner = candOwner
+                repo = candRepo
+            }
+        }
+
+        var title: String? = null
+        var description: String? = null
+        var previewImage: String? = null
+
+        if (owner != null && repo != null) {
+            title = "$owner/$repo"
+            // High-resolution official GitHub OpenGraph social card
+            previewImage = "https://opengraph.githubassets.com/1/$owner/$repo"
+
+            try {
+                val apiUrl = "https://api.github.com/repos/$owner/$repo"
+                val request = Request.Builder()
+                    .url(apiUrl)
+                    .header("User-Agent", "MomoStack/1.0")
+                    .header("Accept", "application/vnd.github.v3+json")
+                    .build()
+                val response = httpClient.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val body = response.body?.string()
+                    if (!body.isNullOrBlank()) {
+                        val json = JSONObject(body)
+                        val repoDesc = json.optString("description").takeIf { it.isNotBlank() }
+                        val stars = json.optInt("stargazers_count", 0)
+                        val language = json.optString("language").takeIf { it.isNotBlank() }
+                        val extra = buildString {
+                            if (language != null) append("[$language] ")
+                            if (stars > 0) append("⭐ $stars • ")
+                            if (repoDesc != null) append(repoDesc)
+                        }
+                        description = if (extra.isNotBlank()) extra else repoDesc
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+
+        if (description.isNullOrBlank() || previewImage.isNullOrBlank()) {
+            try {
+                val doc = Jsoup.connect(url)
+                    .userAgent("facebookexternalhit/1.1")
+                    .timeout(10000)
+                    .get()
+                if (title == null) {
+                    title = doc.select("meta[property=og:title]").attr("content").takeIf { it.isNotBlank() }
+                        ?: doc.title()
+                }
+                if (description == null) {
+                    description = doc.select("meta[property=og:description]").attr("content").takeIf { it.isNotBlank() }
+                        ?: doc.select("meta[name=description]").attr("content").takeIf { it.isNotBlank() }
+                }
+                if (previewImage == null) {
+                    previewImage = doc.select("meta[property=og:image]").attr("content").takeIf { it.isNotBlank() }
+                }
+            } catch (_: Exception) {}
+        }
+
+        return PlatformMetadata(
+            title = title ?: (if (repo != null) repo else "GitHub Repository"),
+            description = description ?: "View code, issues, and discussions on GitHub.",
+            previewImageUrl = previewImage ?: (if (owner != null && repo != null) "https://opengraph.githubassets.com/1/$owner/$repo" else null),
+            faviconUrl = "https://github.githubassets.com/favicons/favicon.png",
+            category = "GitHub",
+            domain = "github.com"
+        )
+    }
+
+    private fun extractHuggingFace(url: String): PlatformMetadata {
+        val matcher = HUGGINGFACE_PATTERN.matcher(url)
+        var owner: String? = null
+        var modelOrSpace: String? = null
+        if (matcher.find()) {
+            owner = matcher.group(1)
+            modelOrSpace = matcher.group(2)
+        }
+
+        var title: String? = if (owner != null && modelOrSpace != null) "$owner/$modelOrSpace" else null
+        var description: String? = null
+        var previewImage: String? = null
+
+        if (owner != null && modelOrSpace != null && !url.contains("/spaces/") && !url.contains("/datasets/")) {
+            try {
+                val apiUrl = "https://huggingface.co/api/models/$owner/$modelOrSpace"
+                val request = Request.Builder()
+                    .url(apiUrl)
+                    .header("User-Agent", "MomoStack/1.0")
+                    .build()
+                val response = httpClient.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val body = response.body?.string()
+                    if (!body.isNullOrBlank()) {
+                        val json = JSONObject(body)
+                        val pipeline = json.optString("pipeline_tag").takeIf { it.isNotBlank() }
+                        val likes = json.optInt("likes", 0)
+                        val downloads = json.optInt("downloads", 0)
+                        val extra = buildString {
+                            if (pipeline != null) append("[$pipeline] ")
+                            if (likes > 0) append("❤️ $likes • ")
+                            if (downloads > 0) append("⬇️ $downloads")
+                        }
+                        if (extra.isNotBlank()) description = extra
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+
+        try {
+            val doc = Jsoup.connect(url)
+                .userAgent("facebookexternalhit/1.1")
+                .timeout(10000)
+                .get()
+            if (title == null) {
+                title = doc.select("meta[property=og:title]").attr("content").takeIf { it.isNotBlank() }
+                    ?: doc.title()
+            }
+            val ogDesc = doc.select("meta[property=og:description]").attr("content").takeIf { it.isNotBlank() }
+                ?: doc.select("meta[name=description]").attr("content").takeIf { it.isNotBlank() }
+            if (description == null && ogDesc != null) {
+                description = ogDesc
+            } else if (description != null && ogDesc != null) {
+                description = "$description • $ogDesc"
+            }
+            previewImage = doc.select("meta[property=og:image]").attr("content").takeIf { it.isNotBlank() }
+        } catch (_: Exception) {}
+
+        return PlatformMetadata(
+            title = title ?: (if (modelOrSpace != null) modelOrSpace else "Hugging Face Model"),
+            description = description ?: "Explore machine learning models, datasets, and apps on Hugging Face.",
+            previewImageUrl = previewImage,
+            faviconUrl = "https://huggingface.co/front/assets/huggingface_logo-noborder.svg",
+            category = "Hugging Face",
+            domain = "huggingface.co"
         )
     }
 }

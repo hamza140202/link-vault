@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -25,6 +26,8 @@ enum class FilterMode {
     YOUTUBE,
     TWITTER,
     THREADS,
+    GITHUB,
+    HUGGINGFACE,
     FAVORITES,
     NOTES,
     ARCHIVED
@@ -85,6 +88,18 @@ class VaultViewModel(
                     list.filter { item ->
                         item.domain?.contains("threads.net") == true ||
                         item.category.equals("Threads", ignoreCase = true)
+                    }
+                }
+                FilterMode.GITHUB -> repository.getActiveItems().map { list ->
+                    list.filter { item ->
+                        item.domain?.contains("github.com") == true ||
+                        item.category.equals("GitHub", ignoreCase = true)
+                    }
+                }
+                FilterMode.HUGGINGFACE -> repository.getActiveItems().map { list ->
+                    list.filter { item ->
+                        item.domain?.contains("huggingface.co") == true ||
+                        item.category.equals("Hugging Face", ignoreCase = true)
                     }
                 }
                 FilterMode.FAVORITES -> repository.getFavoriteItems()
@@ -211,6 +226,24 @@ class VaultViewModel(
     fun refreshStats() {
         viewModelScope.launch {
             _stats.value = repository.getStats()
+        }
+    }
+
+    fun refetchItem(itemId: String) {
+        viewModelScope.launch {
+            com.momostack.app.worker.EnrichmentScheduler.scheduleEnrichment(LinkVaultApp.instance, itemId)
+        }
+    }
+
+    fun refetchPendingItems() {
+        viewModelScope.launch {
+            val all = repository.getActiveItems().firstOrNull() ?: return@launch
+            val pendingOrMissing = all.filter {
+                it.url.isNotBlank() && (it.previewImageUrl.isNullOrBlank() || it.status == com.momostack.app.data.model.ProcessingStatus.PENDING.name || it.status == com.momostack.app.data.model.ProcessingStatus.FAILED.name)
+            }
+            pendingOrMissing.forEach { item ->
+                com.momostack.app.worker.EnrichmentScheduler.scheduleEnrichment(LinkVaultApp.instance, item.id)
+            }
         }
     }
 

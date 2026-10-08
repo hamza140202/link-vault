@@ -25,7 +25,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.OpenInBrowser
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.AlertDialog
@@ -112,6 +114,28 @@ fun DetailScreen(
                     )
                 }
                 if (item.url.isNotBlank()) {
+                    IconButton(onClick = {
+                        viewModel.refetchItem(item.id)
+                        Toast.makeText(context, "Re-fetching metadata & thumbnail...", Toast.LENGTH_SHORT).show()
+                    }) {
+                        Icon(Icons.Filled.Refresh, contentDescription = "Refresh metadata", tint = Slate400)
+                    }
+                    IconButton(onClick = {
+                        val sendIntent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            val shareText = if (item.url.isNotBlank()) {
+                                if (item.title.isNotBlank()) "${item.title}\n${item.url}" else item.url
+                            } else {
+                                item.notes ?: item.title
+                            }
+                            putExtra(Intent.EXTRA_TEXT, shareText)
+                            putExtra(Intent.EXTRA_TITLE, item.title)
+                            type = "text/plain"
+                        }
+                        context.startActivity(Intent.createChooser(sendIntent, "Share link"))
+                    }) {
+                        Icon(Icons.Filled.Share, contentDescription = "Share", tint = Slate400)
+                    }
                     IconButton(onClick = {
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         clipboard.setPrimaryClip(ClipData.newPlainText("URL", item.url))

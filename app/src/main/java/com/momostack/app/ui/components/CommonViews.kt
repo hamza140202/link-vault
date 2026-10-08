@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import android.content.Intent
 import androidx.compose.material.icons.Icons
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Code
@@ -23,7 +25,9 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.Card
@@ -66,8 +70,11 @@ fun LinkCard(
     onArchive: () -> Unit,
     onDelete: () -> Unit,
     onOpenBrowser: () -> Unit,
+    onShare: (() -> Unit)? = null,
+    onRefresh: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -195,6 +202,54 @@ fun LinkCard(
                     }
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        // 1. Refresh icon: visible if metadata/thumbnail is not yet enriched or failed
+                        val needsEnrichment = item.url.isNotBlank() && (item.previewImageUrl.isNullOrBlank() || item.status == "PENDING" || item.status == "FAILED")
+                        if (needsEnrichment && onRefresh != null) {
+                            IconButton(
+                                onClick = onRefresh,
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Refresh,
+                                    contentDescription = "Refresh metadata & thumbnail",
+                                    tint = IndigoPrimary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+
+                        // 2. Share icon: shares to anyone or copies link
+                        IconButton(
+                            onClick = {
+                                if (onShare != null) {
+                                    onShare()
+                                } else {
+                                    val sendIntent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        val shareText = if (item.url.isNotBlank()) {
+                                            if (item.title.isNotBlank()) "${item.title}\n${item.url}" else item.url
+                                        } else {
+                                            item.notes ?: item.title
+                                        }
+                                        putExtra(Intent.EXTRA_TEXT, shareText)
+                                        putExtra(Intent.EXTRA_TITLE, item.title)
+                                        type = "text/plain"
+                                    }
+                                    val shareChooser = Intent.createChooser(sendIntent, "Share link")
+                                    context.startActivity(shareChooser)
+                                }
+                            },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Share,
+                                contentDescription = "Share",
+                                tint = Slate400,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        // 3. Open in browser (if URL is present)
                         if (item.url.isNotBlank()) {
                             IconButton(
                                 onClick = onOpenBrowser,
@@ -208,6 +263,8 @@ fun LinkCard(
                                 )
                             }
                         }
+
+                        // 4. Archive
                         IconButton(
                             onClick = onArchive,
                             modifier = Modifier.size(24.dp)
@@ -219,6 +276,8 @@ fun LinkCard(
                                 modifier = Modifier.size(16.dp)
                             )
                         }
+
+                        // 5. Delete
                         IconButton(
                             onClick = onDelete,
                             modifier = Modifier.size(24.dp)
@@ -247,7 +306,8 @@ fun CardThumbnailBox(
     val isInstagram = item.domain?.contains("instagram") == true || item.category.equals("Instagram", ignoreCase = true)
     val isTwitter = item.domain?.contains("twitter") == true || item.domain?.contains("x.com") == true || item.category.contains("Twitter", ignoreCase = true)
     val isThreads = item.domain?.contains("threads") == true || item.category.equals("Threads", ignoreCase = true)
-    val isGitHub = item.domain?.contains("github") == true
+    val isGitHub = item.domain?.contains("github") == true || item.category.equals("GitHub", ignoreCase = true)
+    val isHuggingFace = item.domain?.contains("huggingface.co") == true || item.category.equals("Hugging Face", ignoreCase = true)
 
     Box(
         modifier = modifier
@@ -257,6 +317,7 @@ fun CardThumbnailBox(
                 when {
                     isNote -> Color(0xFFFEF3C7)
                     isGitHub -> Color(0xFF181717)
+                    isHuggingFace -> Color(0xFFFFFBEB)
                     isInstagram -> Color(0xFFFDF2F8)
                     isTwitter -> Color(0xFFF0F9FF)
                     isThreads -> Color(0xFFF8FAFC)
@@ -278,6 +339,8 @@ fun CardThumbnailBox(
                 isInstagram -> Color(0xFFE1306C)
                 isTwitter -> Color(0xFF1DA1F2)
                 isThreads -> Color(0xFF000000)
+                isGitHub -> Color(0xFF24292E)
+                isHuggingFace -> Color(0xFFFF9D00)
                 else -> null
             }
             val badgeText = when {
@@ -285,6 +348,8 @@ fun CardThumbnailBox(
                 isInstagram -> "IG"
                 isTwitter -> "𝕏"
                 isThreads -> "@"
+                isGitHub -> "GH"
+                isHuggingFace -> "🤗"
                 else -> null
             }
             if (badgeColor != null && badgeText != null) {

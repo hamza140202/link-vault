@@ -8,7 +8,8 @@ class AutoClassifierTest {
 
     @Test
     fun testDomainBasedClassification() {
-        assertEquals("Development", AutoClassifier.classify("github.com", null, null))
+        assertEquals("GitHub", AutoClassifier.classify("github.com", null, null))
+        assertEquals("Hugging Face", AutoClassifier.classify("huggingface.co", null, null))
         assertEquals("Development", AutoClassifier.classify("stackoverflow.com", null, null))
         assertEquals("YouTube", AutoClassifier.classify("youtube.com", null, null))
         assertEquals("Instagram", AutoClassifier.classify("instagram.com", null, null))
@@ -22,7 +23,7 @@ class AutoClassifierTest {
 
     @Test
     fun testSubdomainClassification() {
-        assertEquals("Development", AutoClassifier.classify("api.github.com", null, null))
+        assertEquals("GitHub", AutoClassifier.classify("api.github.com", null, null))
         assertEquals("Reading", AutoClassifier.classify("blog.medium.com", null, null))
     }
 

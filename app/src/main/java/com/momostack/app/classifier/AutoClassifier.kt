@@ -4,7 +4,8 @@ object AutoClassifier {
 
     private val DOMAIN_RULES = mapOf(
         // Development
-        "github.com" to "Development",
+        "github.com" to "GitHub",
+        "huggingface.co" to "Hugging Face",
         "gitlab.com" to "Development",
         "stackoverflow.com" to "Development",
         "developer.android.com" to "Development",
