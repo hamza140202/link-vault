@@ -1,6 +1,8 @@
 package com.linkvault.app.ui
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -22,7 +24,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
+import com.linkvault.app.LinkVaultApp
+import com.linkvault.app.classifier.AutoClassifier
 import com.linkvault.app.data.model.LinkItem
+import com.linkvault.app.data.model.ProcessingStatus
 import com.linkvault.app.ui.screens.DetailScreen
 import com.linkvault.app.ui.screens.HomeScreen
 import com.linkvault.app.ui.screens.NotesScreen
@@ -31,6 +37,12 @@ import com.linkvault.app.ui.theme.IndigoPrimary
 import com.linkvault.app.ui.theme.LinkVaultTheme
 import com.linkvault.app.ui.theme.Slate400
 import com.linkvault.app.ui.viewmodel.VaultViewModel
+import com.linkvault.app.util.UrlExtractor
+import com.linkvault.app.worker.EnrichmentScheduler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.UUID
 
 enum class MainTab {
     LIBRARY,
@@ -44,10 +56,72 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        handleShareIntent(intent)
+
         setContent {
             LinkVaultTheme {
                 MainAppScaffold(viewModel = viewModel)
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleShareIntent(intent)
+    }
+
+    private fun handleShareIntent(intent: Intent?) {
+        if (intent == null || intent.action != Intent.ACTION_SEND) return
+
+        val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
+            ?: intent.getStringExtra(Intent.EXTRA_SUBJECT)
+            ?: ""
+
+        if (sharedText.isBlank()) return
+
+        val extracted = UrlExtractor.extract(sharedText)
+        val itemId = UUID.randomUUID().toString()
+
+        val itemToSave = if (extracted.url != null) {
+            val initialCategory = AutoClassifier.classify(extracted.domain, null, null)
+            LinkItem(
+                id = itemId,
+                url = extracted.url,
+                normalizedUrl = extracted.normalizedUrl,
+                title = extracted.domain ?: extracted.url,
+                domain = extracted.domain,
+                notes = extracted.accompanyingText,
+                category = initialCategory,
+                status = ProcessingStatus.PENDING
+            )
+        } else {
+            LinkItem(
+                id = itemId,
+                url = "",
+                title = sharedText.lines().firstOrNull()?.take(50) ?: "Shared Note",
+                notes = sharedText,
+                category = "Work",
+                status = ProcessingStatus.COMPLETED
+            )
+        }
+
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                LinkVaultApp.instance.repository.saveItem(itemToSave)
+            }
+
+            if (extracted.url != null) {
+                EnrichmentScheduler.scheduleEnrichment(applicationContext, itemId)
+            }
+
+            viewModel.refreshStats()
+
+            Toast.makeText(
+                applicationContext,
+                if (extracted.url != null) "Saved to MomoStack" else "Note captured in MomoStack",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 }
