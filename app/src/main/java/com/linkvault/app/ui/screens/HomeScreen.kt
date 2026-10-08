@@ -160,6 +160,10 @@ fun HomeScreen(
                 }
                 val filters = listOf(
                     Pair(FilterMode.ALL, "All"),
+                    Pair(FilterMode.INSTAGRAM, "📸 Instagram"),
+                    Pair(FilterMode.YOUTUBE, "▶️ YouTube"),
+                    Pair(FilterMode.TWITTER, "𝕏 Twitter"),
+                    Pair(FilterMode.THREADS, "🧵 Threads"),
                     Pair(FilterMode.FAVORITES, "Favorites"),
                     Pair(FilterMode.NOTES, "Notes"),
                     Pair(FilterMode.ARCHIVED, "Archived")
@@ -182,12 +186,26 @@ fun HomeScreen(
 
             // Main List or Empty State
             if (items.isEmpty()) {
+                val emptyMsg = when (selectedFilter) {
+                    FilterMode.INSTAGRAM -> "No Instagram links saved yet"
+                    FilterMode.YOUTUBE -> "No YouTube videos saved yet"
+                    FilterMode.TWITTER -> "No Twitter / X links saved yet"
+                    FilterMode.THREADS -> "No Threads links saved yet"
+                    FilterMode.FAVORITES -> "No favorite links yet"
+                    FilterMode.NOTES -> "No notes captured yet"
+                    FilterMode.ARCHIVED -> "No archived links"
+                    FilterMode.ALL -> if (searchQuery.isNotBlank()) "No matching results" else "No saved links yet"
+                }
+                val emptySubMsg = when (selectedFilter) {
+                    FilterMode.INSTAGRAM -> "Share any post or reel from Instagram to MomoStack to view thumbnails and captions."
+                    FilterMode.YOUTUBE -> "Share any video or short from YouTube to MomoStack to capture thumbnails instantly."
+                    FilterMode.TWITTER -> "Share any post from X/Twitter to MomoStack to capture tweets and media."
+                    FilterMode.THREADS -> "Share any post from Threads to MomoStack to save conversations."
+                    else -> if (searchQuery.isNotBlank()) "Try another keyword or domain search." else "Share any link from Chrome, YouTube, Instagram or tap + to save manually."
+                }
                 EmptyStateView(
-                    message = if (searchQuery.isNotBlank()) "No matching results" else "No saved links yet",
-                    subMessage = if (searchQuery.isNotBlank())
-                        "Try another keyword or domain search."
-                    else
-                        "Share any link from Chrome, YouTube, or tap the + button to save a URL manually.",
+                    message = emptyMsg,
+                    subMessage = emptySubMsg,
                     modifier = Modifier.weight(1f)
                 )
             } else {

@@ -35,9 +35,27 @@ class EnrichmentWorker(
         }
 
         try {
+            // 1. Check specialized social / video platform extractor first
+            val platformMeta = com.linkvault.app.util.PlatformMetadataExtractor.extract(item.url)
+            if (platformMeta != null) {
+                val updated = item.copy(
+                    title = platformMeta.title ?: item.title,
+                    description = platformMeta.description ?: item.description,
+                    previewImageUrl = platformMeta.previewImageUrl ?: item.previewImageUrl,
+                    faviconUrl = platformMeta.faviconUrl ?: item.faviconUrl,
+                    category = if (item.category == "Uncategorized") platformMeta.category else item.category,
+                    domain = platformMeta.domain ?: item.domain,
+                    status = ProcessingStatus.COMPLETED.name,
+                    updatedAt = System.currentTimeMillis()
+                )
+                dao.update(updated)
+                showEnrichmentNotification(updated.title, updated.category)
+                return Result.success()
+            }
+
             val request = Request.Builder()
                 .url(item.url)
-                .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36 MomoStack/1.0")
+                .header("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1 MomoStack/1.0")
                 .build()
 
             val response = httpClient.newCall(request).execute()

@@ -15,11 +15,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 enum class FilterMode {
     ALL,
+    INSTAGRAM,
+    YOUTUBE,
+    TWITTER,
+    THREADS,
     FAVORITES,
     NOTES,
     ARCHIVED
@@ -56,6 +61,32 @@ class VaultViewModel(
         } else {
             when (filter) {
                 FilterMode.ALL -> repository.getActiveItems()
+                FilterMode.INSTAGRAM -> repository.getActiveItems().map { list ->
+                    list.filter { item ->
+                        item.domain?.contains("instagram.com") == true ||
+                        item.category.equals("Instagram", ignoreCase = true)
+                    }
+                }
+                FilterMode.YOUTUBE -> repository.getActiveItems().map { list ->
+                    list.filter { item ->
+                        item.domain?.contains("youtube.com") == true ||
+                        item.domain?.contains("youtu.be") == true ||
+                        item.category.equals("YouTube", ignoreCase = true)
+                    }
+                }
+                FilterMode.TWITTER -> repository.getActiveItems().map { list ->
+                    list.filter { item ->
+                        item.domain?.contains("twitter.com") == true ||
+                        item.domain?.contains("x.com") == true ||
+                        item.category.contains("Twitter", ignoreCase = true)
+                    }
+                }
+                FilterMode.THREADS -> repository.getActiveItems().map { list ->
+                    list.filter { item ->
+                        item.domain?.contains("threads.net") == true ||
+                        item.category.equals("Threads", ignoreCase = true)
+                    }
+                }
                 FilterMode.FAVORITES -> repository.getFavoriteItems()
                 FilterMode.NOTES -> repository.getNotesItems()
                 FilterMode.ARCHIVED -> repository.getArchivedItems()

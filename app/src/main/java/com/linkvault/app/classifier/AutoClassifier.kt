@@ -26,9 +26,17 @@ object AutoClassifier {
         "economist.com" to "Reading",
         "theatlantic.com" to "Reading",
 
+        // Social & Video Platforms (Dedicated platform categorization)
+        "youtube.com" to "YouTube",
+        "youtu.be" to "YouTube",
+        "instagram.com" to "Instagram",
+        "threads.net" to "Threads",
+        "twitter.com" to "Twitter",
+        "x.com" to "Twitter",
+        "reddit.com" to "Reddit",
+        "tiktok.com" to "TikTok",
+
         // Entertainment
-        "youtube.com" to "Entertainment",
-        "youtu.be" to "Entertainment",
         "spotify.com" to "Entertainment",
         "netflix.com" to "Entertainment",
         "twitch.tv" to "Entertainment",

@@ -53,6 +53,10 @@ abstract class LinkVaultDatabase : RoomDatabase() {
 
             private suspend fun populateDefaultCategories(categoryDao: CategoryDao) {
                 val defaults = listOf(
+                    CategoryEntity("cat_instagram", "Instagram", "#E1306C", "camera", true),
+                    CategoryEntity("cat_youtube", "YouTube", "#FF0000", "play", true),
+                    CategoryEntity("cat_twitter", "Twitter", "#1DA1F2", "message-circle", true),
+                    CategoryEntity("cat_threads", "Threads", "#000000", "at-sign", true),
                     CategoryEntity("cat_dev", "Development", "#4F46E5", "code", true),
                     CategoryEntity("cat_reading", "Reading", "#0D9488", "book", true),
                     CategoryEntity("cat_entertainment", "Entertainment", "#D97706", "play", true),

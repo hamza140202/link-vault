@@ -243,7 +243,10 @@ fun CardThumbnailBox(
     modifier: Modifier = Modifier
 ) {
     val isNote = item.url.isBlank() || !item.notes.isNullOrBlank() && item.url.isBlank()
-    val isYouTube = item.domain?.contains("youtube") == true || item.domain?.contains("youtu.be") == true
+    val isYouTube = item.domain?.contains("youtube") == true || item.domain?.contains("youtu.be") == true || item.category.equals("YouTube", ignoreCase = true)
+    val isInstagram = item.domain?.contains("instagram") == true || item.category.equals("Instagram", ignoreCase = true)
+    val isTwitter = item.domain?.contains("twitter") == true || item.domain?.contains("x.com") == true || item.category.contains("Twitter", ignoreCase = true)
+    val isThreads = item.domain?.contains("threads") == true || item.category.equals("Threads", ignoreCase = true)
     val isGitHub = item.domain?.contains("github") == true
 
     Box(
@@ -254,6 +257,9 @@ fun CardThumbnailBox(
                 when {
                     isNote -> Color(0xFFFEF3C7)
                     isGitHub -> Color(0xFF181717)
+                    isInstagram -> Color(0xFFFDF2F8)
+                    isTwitter -> Color(0xFFF0F9FF)
+                    isThreads -> Color(0xFFF8FAFC)
                     else -> MaterialTheme.colorScheme.surfaceVariant
                 }
             ),
@@ -266,22 +272,36 @@ fun CardThumbnailBox(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-            if (isYouTube) {
-                // Red YouTube badge in corner (matching index.html)
+            // Platform corner badge
+            val badgeColor = when {
+                isYouTube -> Color(0xFFFF0000)
+                isInstagram -> Color(0xFFE1306C)
+                isTwitter -> Color(0xFF1DA1F2)
+                isThreads -> Color(0xFF000000)
+                else -> null
+            }
+            val badgeText = when {
+                isYouTube -> "▶"
+                isInstagram -> "IG"
+                isTwitter -> "𝕏"
+                isThreads -> "@"
+                else -> null
+            }
+            if (badgeColor != null && badgeText != null) {
                 Surface(
                     shape = RoundedCornerShape(4.dp),
-                    color = Color(0xFFFF0000),
+                    color = badgeColor,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(4.dp)
                         .size(width = 20.dp, height = 14.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Filled.PlayArrow,
-                            contentDescription = "Video",
-                            tint = Color.White,
-                            modifier = Modifier.size(12.dp)
+                        Text(
+                            text = badgeText,
+                            color = Color.White,
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -304,6 +324,54 @@ fun CardThumbnailBox(
                         tint = Color.White,
                         modifier = Modifier.size(26.dp)
                     )
+                }
+                isInstagram -> {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFFE1306C),
+                        modifier = Modifier.size(width = 38.dp, height = 28.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = "IG",
+                                color = Color.White,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 13.sp
+                            )
+                        }
+                    }
+                }
+                isTwitter -> {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF0F1419),
+                        modifier = Modifier.size(width = 38.dp, height = 28.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = "𝕏",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
+                isThreads -> {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF000000),
+                        modifier = Modifier.size(width = 38.dp, height = 28.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = "@",
+                                color = Color.White,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
                 }
                 isYouTube -> {
                     Surface(
