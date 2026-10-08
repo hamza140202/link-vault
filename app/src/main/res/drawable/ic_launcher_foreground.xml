@@ -2,13 +2,133 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <!-- Clean Vault / Bookmark Symbol in White -->
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Ambient Sparkle Stars -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M38,30h32c3.31,0 6,2.69 6,6v42l-22,-10l-22,10v-42c0,-3.31 2.69,-6 6,-6z" />
+        android:fillColor="#E6FFFFFF"
+        android:pathData="M406,102 L409,110 L417,113 L409,116 L406,124 L403,116 L395,113 L403,110 Z" />
     <path
-        android:fillColor="#4F46E5"
-        android:pathData="M54,42c-3.31,0 -6,2.69 -6,6c0,2.4 1.42,4.47 3.47,5.43v5.57h5.06v-5.57c2.05,-0.96 3.47,-3.03 3.47,-5.43c0,-3.31 -2.69,-6 -6,-6z" />
+        android:fillColor="#CCFFFFFF"
+        android:pathData="M372,91a3,3 0 1,0 6,0a3,3 0 1,0 -6,0" />
+
+    <!-- Left Outer Ear (Rotated -20 around 170,155) -->
+    <group
+        android:pivotX="170"
+        android:pivotY="155"
+        android:rotation="-20">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M134,155a36,52 0 1,0 72,0a36,52 0 1,0 -72,0" />
+        <path
+            android:fillColor="#FFF43F5E"
+            android:pathData="M148,155a22,36 0 1,0 44,0a22,36 0 1,0 -44,0" />
+    </group>
+
+    <!-- Right Outer Ear (Rotated 20 around 342,155) -->
+    <group
+        android:pivotX="342"
+        android:pivotY="155"
+        android:rotation="20">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M306,155a36,52 0 1,0 72,0a36,52 0 1,0 -72,0" />
+        <path
+            android:fillColor="#FFF43F5E"
+            android:pathData="M320,155a22,36 0 1,0 44,0a22,36 0 1,0 -44,0" />
+    </group>
+
+    <!-- Momo Dumpling Body -->
+    <path
+        android:fillColor="#FFFFFDF9"
+        android:strokeColor="#FFFFE4E6"
+        android:strokeWidth="2"
+        android:pathData="M 256,145 C 366,145 400,210 400,298 C 400,390 350,412 256,412 C 162,412 112,390 112,298 C 112,210 146,145 256,145 Z" />
+
+    <!-- Rosy Blush Cheeks -->
+    <path
+        android:fillColor="#40FF4D6D"
+        android:pathData="M144,310a26,26 0 1,0 52,0a26,26 0 1,0 -52,0" />
+    <path
+        android:fillColor="#40FF4D6D"
+        android:pathData="M316,310a26,26 0 1,0 52,0a26,26 0 1,0 -52,0" />
+
+    <!-- Anime Sparkle Eyes - Left -->
+    <path
+        android:fillColor="#FF18181B"
+        android:pathData="M185,268a19,26 0 1,0 38,0a19,26 0 1,0 -38,0" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M204,256a8,11 0 1,0 16,0a8,11 0 1,0 -16,0" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M193.5,280a4.5,4.5 0 1,0 9,0a4.5,4.5 0 1,0 -9,0" />
+    <path
+        android:fillColor="#CCFFFFFF"
+        android:pathData="M214.5,278a2.5,2.5 0 1,0 5,0a2.5,2.5 0 1,0 -5,0" />
+
+    <!-- Anime Sparkle Eyes - Right -->
+    <path
+        android:fillColor="#FF18181B"
+        android:pathData="M289,268a19,26 0 1,0 38,0a19,26 0 1,0 -38,0" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M308,256a8,11 0 1,0 16,0a8,11 0 1,0 -16,0" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M297.5,280a4.5,4.5 0 1,0 9,0a4.5,4.5 0 1,0 -9,0" />
+    <path
+        android:fillColor="#CCFFFFFF"
+        android:pathData="M318.5,278a2.5,2.5 0 1,0 5,0a2.5,2.5 0 1,0 -5,0" />
+
+    <!-- Sweet Smile & Tongue -->
+    <path
+        android:strokeColor="#FF18181B"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M 242,292 Q 256,308 270,292" />
+    <path
+        android:fillColor="#FFFB7185"
+        android:pathData="M 249,299 Q 256,310 263,299 Z" />
+
+    <!-- CONCEPT 1: Held Note Card (Brand Indigo) -->
+    <path
+        android:fillColor="#FF4F46E5"
+        android:strokeColor="#FF818CF8"
+        android:strokeWidth="2.5"
+        android:pathData="M 194,326 h 124 a 18,18 0 0,1 18,18 v 56 a 18,18 0 0,1 -18,18 h -124 a 18,18 0 0,1 -18,-18 v -56 a 18,18 0 0,1 18,-18 Z" />
+
+    <!-- Bookmark Ribbon Tab with Gold Star -->
+    <path
+        android:fillColor="#FFFF6B8B"
+        android:pathData="M 238,312 L 274,312 C 276,312 277,313 277,315 L 277,350 L 256,338 L 235,350 L 235,315 C 235,313 236,312 238,312 Z" />
+    <path
+        android:fillColor="#FFFBBF24"
+        android:pathData="M252.5,324a3.5,3.5 0 1,0 7,0a3.5,3.5 0 1,0 -7,0" />
+
+    <!-- Crisp Note Lines -->
+    <path
+        android:strokeColor="#FFE0E7FF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M 198,368 L 314,368" />
+    <path
+        android:strokeColor="#FFE0E7FF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M 198,384 L 284,384" />
+
+    <!-- Momo's Little Plush Paws Holding the Card -->
+    <path
+        android:fillColor="#FFFFFDF9"
+        android:strokeColor="#FFFFE4E6"
+        android:strokeWidth="1.5"
+        android:pathData="M160,372a16,12 0 1,0 32,0a16,12 0 1,0 -32,0" />
+    <path
+        android:fillColor="#FFFFFDF9"
+        android:strokeColor="#FFFFE4E6"
+        android:strokeWidth="1.5"
+        android:pathData="M320,372a16,12 0 1,0 32,0a16,12 0 1,0 -32,0" />
+
 </vector>
