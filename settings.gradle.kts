@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "link-vault"
+rootProject.name = "momostack"
 include(":app")

@@ -4,7 +4,7 @@
 Capture must be instant, non-blocking, and 100% resilient to network absence or failure.
 
 ## 2. Intent Handling Strategy
-- **Target Activity**: `com.linkvault.app.ShareCaptureActivity`
+- **Target Activity**: `com.momostack.app.ui.ShareCaptureActivity`
 - **Filter**:
   ```xml
   <intent-filter>

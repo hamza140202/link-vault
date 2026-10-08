@@ -40,8 +40,8 @@ jobs:
         run: |
           mkdir -p release-assets
           TAG_VER="${{ github.event.inputs.version || github.ref_name }}"
-          cp app/build/outputs/apk/release/*.apk release-assets/linkvault-${TAG_VER}.apk
-          cp app/build/outputs/apk/release/*.apk release-assets/app-release.apk
+          cp app/build/outputs/apk/release/*.apk release-assets/momostack-${TAG_VER}.apk
+          cp app/build/outputs/apk/release/*.apk release-assets/momostack-release.apk
           cd release-assets
           sha256sum *.apk > SHA256SUMS.txt
           cat SHA256SUMS.txt
@@ -50,9 +50,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.version || github.ref_name }}
-          name: LinkVault ${{ github.event.inputs.version || github.ref_name }}
+          name: MomoStack ${{ github.event.inputs.version || github.ref_name }}
           body: |
-            ## LinkVault 🔒📱
+            ## MomoStack 🔒📱
             **Local-First Android Link & Note Capture App**
             
             ### Features

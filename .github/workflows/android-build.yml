@@ -36,8 +36,8 @@ jobs:
       - name: Compute SHA-256 Checksums
         run: |
           mkdir -p build-output
-          cp app/build/outputs/apk/debug/*.apk build-output/ || true
-          cp app/build/outputs/apk/release/*.apk build-output/ || true
+          cp app/build/outputs/apk/debug/*.apk build-output/momostack-debug.apk || true
+          cp app/build/outputs/apk/release/*.apk build-output/momostack-release.apk || true
           cd build-output
           sha256sum *.apk > SHA256SUMS.txt
           cat SHA256SUMS.txt
@@ -45,6 +45,6 @@ jobs:
       - name: Upload APK Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: linkvault-apks
+          name: momostack-apks
           path: build-output/
           retention-days: 30
