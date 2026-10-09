@@ -13,3 +13,4 @@
 *.ap_
 output-metadata.json
 build-output/
+output-*/

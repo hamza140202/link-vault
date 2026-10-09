@@ -115,7 +115,7 @@ fun HomeScreen(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Local-First Capture",
+                            text = "Save anything for later",
                             style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                             color = Slate500
                         )
@@ -218,13 +218,13 @@ fun HomeScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "$pendingCount item(s) missing metadata / preview",
+                                text = "$pendingCount links waiting for preview photos",
                                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                         Text(
-                            text = "Tap to fetch ➔",
+                            text = "Tap to load ➔",
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                             color = IndigoPrimary
                         )

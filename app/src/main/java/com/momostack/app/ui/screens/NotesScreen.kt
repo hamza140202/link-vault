@@ -177,7 +177,7 @@ fun NotesScreen(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "First-class format-smart notes & clipboard",
+                                text = "A cozy place for your thoughts & notes",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                                 color = Slate500
                             )
@@ -202,8 +202,8 @@ fun NotesScreen(
                 // Notes List or Empty State
                 if (noteItems.isEmpty()) {
                     EmptyStateView(
-                        message = "No notes captured yet",
-                        subMessage = "Tap the + button below to create a quick note or paste your clipboard with headers and bold formatting.",
+                        message = "No notes yet 📝",
+                        subMessage = "Tap the + button to jot down a thought, or paste anything from your clipboard.",
                         modifier = Modifier.weight(1f)
                     )
                 } else {
@@ -600,7 +600,7 @@ fun FullPageNoteEditor(
                 },
                 placeholder = {
                     Text(
-                        "Start typing your thoughts, markdown, or paste rich text with headers & bold...",
+                        "Write what's on your mind, or paste notes and reading lists...",
                         color = Slate400,
                         style = MaterialTheme.typography.bodyMedium
                     )
