@@ -178,6 +178,17 @@ class VaultViewModel(
         }
     }
 
+    private val _openNewNoteEditor = MutableStateFlow(false)
+    val openNewNoteEditor = _openNewNoteEditor.asStateFlow()
+
+    fun requestOpenNewNote() {
+        _openNewNoteEditor.value = true
+    }
+
+    fun consumeOpenNewNote() {
+        _openNewNoteEditor.value = false
+    }
+
     fun saveDirectLink(rawUrl: String, title: String? = null, notes: String? = null) {
         if (rawUrl.isBlank()) return
         val extracted = com.momostack.app.util.UrlExtractor.extract(rawUrl)
@@ -198,8 +209,10 @@ class VaultViewModel(
         )
 
         viewModelScope.launch {
-            repository.saveItem(item)
-            com.momostack.app.worker.EnrichmentScheduler.scheduleEnrichment(LinkVaultApp.instance, itemId)
+            val saved = repository.saveOrMergeItem(item)
+            if (saved.url.isNotBlank()) {
+                com.momostack.app.worker.EnrichmentScheduler.scheduleEnrichment(LinkVaultApp.instance, saved.id)
+            }
             refreshStats()
         }
     }
@@ -208,7 +221,7 @@ class VaultViewModel(
         if (noteContent.isBlank()) return
         viewModelScope.launch {
             val autoTitle = title?.takeIf { it.isNotBlank() }
-                ?: noteContent.lines().firstOrNull()?.take(40)
+                ?: noteContent.lines().firstOrNull { it.isNotBlank() }?.replace(Regex("^#+\\s*"), "")?.take(40)
                 ?: "Quick Note"
 
             val item = LinkItem(

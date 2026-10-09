@@ -35,6 +35,14 @@ interface LinkItemDao {
 
     @Query("""
         SELECT * FROM link_items 
+        WHERE (:normalizedUrl IS NOT NULL AND :normalizedUrl != '' AND normalizedUrl = :normalizedUrl) 
+           OR (:url != '' AND url = :url) 
+        LIMIT 1
+    """)
+    suspend fun findExisting(url: String, normalizedUrl: String?): LinkItemEntity?
+
+    @Query("""
+        SELECT * FROM link_items 
         WHERE (title LIKE '%' || :query || '%' 
            OR domain LIKE '%' || :query || '%' 
            OR description LIKE '%' || :query || '%' 

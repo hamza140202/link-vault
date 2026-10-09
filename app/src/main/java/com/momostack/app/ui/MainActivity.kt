@@ -65,6 +65,7 @@ import com.momostack.app.ui.components.MomoMascotView
 import com.momostack.app.ui.screens.AddLinkDialog
 import com.momostack.app.ui.screens.CategoriesScreen
 import com.momostack.app.ui.screens.DetailScreen
+import com.momostack.app.ui.screens.FullPageNoteEditor
 import com.momostack.app.ui.screens.HomeScreen
 import com.momostack.app.ui.screens.NoteEditorDialog
 import com.momostack.app.ui.screens.NotesScreen
@@ -112,11 +113,30 @@ class MainActivity : ComponentActivity() {
     private fun handleShareIntent(intent: Intent?) {
         if (intent == null || intent.action != Intent.ACTION_SEND) return
 
-        val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
+        var sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
             ?: intent.getStringExtra(Intent.EXTRA_SUBJECT)
             ?: ""
 
+        var htmlContent: String? = null
+        val clipData = intent.clipData
+        if (clipData != null && clipData.itemCount > 0) {
+            val item = clipData.getItemAt(0)
+            if (sharedText.isBlank()) {
+                sharedText = item.text?.toString() ?: item.coerceToText(this).toString()
+            }
+            htmlContent = item.htmlText
+        }
+
         if (sharedText.isBlank()) return
+
+        // Smart format if HTML is present
+        val formattedBody = if (!htmlContent.isNullOrBlank() && com.momostack.app.util.RichTextFormatter.containsHtml(htmlContent)) {
+            com.momostack.app.util.RichTextFormatter.htmlToMarkdown(htmlContent)
+        } else if (com.momostack.app.util.RichTextFormatter.containsHtml(sharedText)) {
+            com.momostack.app.util.RichTextFormatter.htmlToMarkdown(sharedText)
+        } else {
+            sharedText
+        }
 
         val extracted = UrlExtractor.extract(sharedText)
         val itemId = UUID.randomUUID().toString()
@@ -129,35 +149,40 @@ class MainActivity : ComponentActivity() {
                 normalizedUrl = extracted.normalizedUrl,
                 title = extracted.domain ?: extracted.url,
                 domain = extracted.domain,
-                notes = extracted.accompanyingText,
+                notes = extracted.accompanyingText ?: if (formattedBody != sharedText) formattedBody else null,
                 category = initialCategory,
                 status = ProcessingStatus.PENDING
             )
         } else {
+            val cleanTitle = formattedBody.lines().firstOrNull { it.isNotBlank() }
+                ?.replace(Regex("^#+\\s*"), "")
+                ?.take(50)
+                ?: "Clipboard Note"
+
             LinkItem(
                 id = itemId,
                 url = "",
-                title = sharedText.lines().firstOrNull()?.take(50) ?: "Shared Note",
-                notes = sharedText,
+                title = cleanTitle,
+                notes = formattedBody,
                 category = "Work",
                 status = ProcessingStatus.COMPLETED
             )
         }
 
         lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                LinkVaultApp.instance.repository.saveItem(itemToSave)
+            val savedItem = withContext(Dispatchers.IO) {
+                LinkVaultApp.instance.repository.saveOrMergeItem(itemToSave)
             }
 
-            if (extracted.url != null) {
-                EnrichmentScheduler.scheduleEnrichment(applicationContext, itemId)
+            if (savedItem.url.isNotBlank()) {
+                EnrichmentScheduler.scheduleEnrichment(applicationContext, savedItem.id)
             }
 
             viewModel.refreshStats()
 
             Toast.makeText(
                 applicationContext,
-                if (extracted.url != null) "Saved to MomoStack" else "Note captured in MomoStack",
+                if (savedItem.url.isNotBlank()) "🥟 Saved to MomoStack" else "📝 Note captured in MomoStack",
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -227,7 +252,11 @@ fun MainAppScaffold(viewModel: VaultViewModel) {
             QuickAddDialog(
                 onDismiss = { showQuickAddChoice = false },
                 onAddLink = { showAddLinkDialog = true },
-                onAddNote = { showCreateNoteDialog = true }
+                onAddNote = {
+                    showQuickAddChoice = false
+                    selectedTab = MainTab.NOTES
+                    viewModel.requestOpenNewNote()
+                }
             )
         }
 
@@ -244,13 +273,13 @@ fun MainAppScaffold(viewModel: VaultViewModel) {
             )
         }
 
-        // Create Note Dialog
+        // Create Note Full-Page Setup
         if (showCreateNoteDialog) {
-            NoteEditorDialog(
+            FullPageNoteEditor(
                 initialTitle = "",
                 initialBody = "",
-                dialogTitle = "New Note",
-                onDismiss = { showCreateNoteDialog = false },
+                isNewNote = true,
+                onBack = { showCreateNoteDialog = false },
                 onSave = { title, body ->
                     viewModel.saveDirectNote(body, title)
                     Toast.makeText(context, "Saved note to MomoStack", Toast.LENGTH_SHORT).show()

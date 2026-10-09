@@ -30,7 +30,10 @@ fun MomoMascotView(
     modifier: Modifier = Modifier,
     size: Dp = 100.dp,
     animate: Boolean = true,
-    holdingCard: Boolean = true
+    holdingCard: Boolean = true,
+    isWriting: Boolean = false,
+    lookOffsetX: Float = 0f,
+    lookOffsetY: Float = 0f
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "momoAnimation")
 
@@ -118,38 +121,47 @@ fun MomoMascotView(
                 center = Offset(342f * scale, 310f * scale)
             )
 
+            // Pupil dynamics for cursor watching
+            val maxEyeShift = 8f * scale
+            val pupilDx = (lookOffsetX.coerceIn(-1f, 1f) * maxEyeShift)
+            val pupilDy = if (isWriting) {
+                (lookOffsetY.coerceIn(-1f, 1f) * 4f * scale + 4f * scale).coerceIn(-2f * scale, 8f * scale)
+            } else {
+                (lookOffsetY.coerceIn(-1f, 1f) * maxEyeShift)
+            }
+
             // Left Eye
             drawOval(
                 color = Color(0xFF18181B),
-                topLeft = Offset((204f - 19f) * scale, (268f - 26f) * scale),
+                topLeft = Offset((204f - 19f) * scale + pupilDx * 0.4f, (268f - 26f) * scale + pupilDy * 0.4f),
                 size = Size(38f * scale, 52f * scale)
             )
             drawOval(
                 color = Color.White,
-                topLeft = Offset((212f - 8f) * scale, (256f - 11f) * scale),
+                topLeft = Offset((212f - 8f) * scale + pupilDx, (256f - 11f) * scale + pupilDy),
                 size = Size(16f * scale, 22f * scale)
             )
             drawCircle(
                 color = Color.White,
                 radius = 4.5f * scale,
-                center = Offset(198f * scale, 280f * scale)
+                center = Offset(198f * scale + pupilDx * 0.8f, 280f * scale + pupilDy * 0.8f)
             )
 
             // Right Eye
             drawOval(
                 color = Color(0xFF18181B),
-                topLeft = Offset((308f - 19f) * scale, (268f - 26f) * scale),
+                topLeft = Offset((308f - 19f) * scale + pupilDx * 0.4f, (268f - 26f) * scale + pupilDy * 0.4f),
                 size = Size(38f * scale, 52f * scale)
             )
             drawOval(
                 color = Color.White,
-                topLeft = Offset((316f - 8f) * scale, (256f - 11f) * scale),
+                topLeft = Offset((316f - 8f) * scale + pupilDx, (256f - 11f) * scale + pupilDy),
                 size = Size(16f * scale, 22f * scale)
             )
             drawCircle(
                 color = Color.White,
                 radius = 4.5f * scale,
-                center = Offset(302f * scale, 280f * scale)
+                center = Offset(302f * scale + pupilDx * 0.8f, 280f * scale + pupilDy * 0.8f)
             )
 
             // Sweet Smile & Pink Tongue
@@ -245,6 +257,35 @@ fun MomoMascotView(
                     size = Size(32f * scale, 24f * scale),
                     style = Stroke(width = 1.5f * scale)
                 )
+
+                // Writing Pencil in right paw
+                if (isWriting) {
+                    rotate(degrees = -32f, pivot = Offset(350f * scale, 360f * scale)) {
+                        // Pencil shaft
+                        drawRoundRect(
+                            color = Color(0xFFFBBF24),
+                            topLeft = Offset(345f * scale, 310f * scale),
+                            size = Size(10f * scale, 55f * scale),
+                            cornerRadius = CornerRadius(2f * scale, 2f * scale)
+                        )
+                        // Pencil tip
+                        val tipPath = Path().apply {
+                            moveTo(345f * scale, 365f * scale)
+                            lineTo(355f * scale, 365f * scale)
+                            lineTo(350f * scale, 378f * scale)
+                            close()
+                        }
+                        drawPath(path = tipPath, color = Color(0xFFFED7AA))
+                        drawCircle(color = Color(0xFF18181B), radius = 2.5f * scale, center = Offset(350f * scale, 376f * scale))
+                        // Pencil eraser
+                        drawRoundRect(
+                            color = Color(0xFFF43F5E),
+                            topLeft = Offset(345f * scale, 302f * scale),
+                            size = Size(10f * scale, 9f * scale),
+                            cornerRadius = CornerRadius(2f * scale, 2f * scale)
+                        )
+                    }
+                }
             }
         }
     }

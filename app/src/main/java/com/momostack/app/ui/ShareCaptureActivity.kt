@@ -40,14 +40,33 @@ class ShareCaptureActivity : ComponentActivity() {
             return
         }
 
-        val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
+        var sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
             ?: intent.getStringExtra(Intent.EXTRA_SUBJECT)
             ?: ""
+
+        var htmlContent: String? = null
+        val clipData = intent.clipData
+        if (clipData != null && clipData.itemCount > 0) {
+            val item = clipData.getItemAt(0)
+            if (sharedText.isBlank()) {
+                sharedText = item.text?.toString() ?: item.coerceToText(this).toString()
+            }
+            htmlContent = item.htmlText
+        }
 
         if (sharedText.isBlank()) {
             Toast.makeText(this, "No content found to save", Toast.LENGTH_SHORT).show()
             finish()
             return
+        }
+
+        // Smart format if HTML is present
+        val formattedBody = if (!htmlContent.isNullOrBlank() && com.momostack.app.util.RichTextFormatter.containsHtml(htmlContent)) {
+            com.momostack.app.util.RichTextFormatter.htmlToMarkdown(htmlContent)
+        } else if (com.momostack.app.util.RichTextFormatter.containsHtml(sharedText)) {
+            com.momostack.app.util.RichTextFormatter.htmlToMarkdown(sharedText)
+        } else {
+            sharedText
         }
 
         val extracted = UrlExtractor.extract(sharedText)
@@ -61,33 +80,39 @@ class ShareCaptureActivity : ComponentActivity() {
                 normalizedUrl = extracted.normalizedUrl,
                 title = extracted.domain ?: extracted.url,
                 domain = extracted.domain,
-                notes = extracted.accompanyingText,
+                notes = extracted.accompanyingText ?: if (formattedBody != sharedText) formattedBody else null,
                 category = initialCategory,
                 status = ProcessingStatus.PENDING
             )
         } else {
+            // Smart note recognition from clipboard/text share
+            val cleanTitle = formattedBody.lines().firstOrNull { it.isNotBlank() }
+                ?.replace(Regex("^#+\\s*"), "")
+                ?.take(50)
+                ?: "Clipboard Note"
+
             LinkItem(
                 id = itemId,
                 url = "",
-                title = sharedText.lines().firstOrNull()?.take(50) ?: "Shared Note",
-                notes = sharedText,
+                title = cleanTitle,
+                notes = formattedBody,
                 category = "Work",
                 status = ProcessingStatus.COMPLETED
             )
         }
 
         lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                LinkVaultApp.instance.repository.saveItem(itemToSave)
+            val savedItem = withContext(Dispatchers.IO) {
+                LinkVaultApp.instance.repository.saveOrMergeItem(itemToSave)
             }
 
-            if (extracted.url != null) {
-                EnrichmentScheduler.scheduleEnrichment(applicationContext, itemId)
+            if (savedItem.url.isNotBlank()) {
+                EnrichmentScheduler.scheduleEnrichment(applicationContext, savedItem.id)
             }
 
             Toast.makeText(
                 applicationContext,
-                if (extracted.url != null) "🥟 Saved to MomoStack" else "🥟 Note captured in MomoStack",
+                if (savedItem.url.isNotBlank()) "🥟 Saved to MomoStack" else "📝 Note saved to MomoStack",
                 Toast.LENGTH_SHORT
             ).show()
 

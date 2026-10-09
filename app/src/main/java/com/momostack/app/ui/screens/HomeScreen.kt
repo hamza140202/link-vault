@@ -338,14 +338,14 @@ fun HomeScreen(
             )
         }
 
-        // Note Viewer / Editor Dialog (when tapped directly)
+        // Note Viewer / Editor Full-Page Setup (when tapped directly)
         if (noteToEdit != null) {
             val currentNote = noteToEdit!!
-            NoteEditorDialog(
+            FullPageNoteEditor(
                 initialTitle = currentNote.title,
                 initialBody = currentNote.notes ?: "",
-                dialogTitle = "Edit Note",
-                onDismiss = { noteToEdit = null },
+                isNewNote = false,
+                onBack = { noteToEdit = null },
                 onSave = { _, updatedBody ->
                     viewModel.updateNotes(currentNote.id, updatedBody)
                     Toast.makeText(context, "Note updated", Toast.LENGTH_SHORT).show()
