@@ -81,6 +81,7 @@ fun SettingsScreen(
 
     when (activeSubscreen) {
         SettingsSubscreen.MAIN -> MainSettingsView(
+            viewModel = viewModel,
             onNavigate = { activeSubscreen = it },
             modifier = modifier
         )
@@ -129,9 +130,11 @@ fun SettingsScreen(
 
 @Composable
 fun MainSettingsView(
+    viewModel: VaultViewModel,
     onNavigate: (SettingsSubscreen) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val appearancePrefs by viewModel.appearancePrefs.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
     var isSearching by remember { mutableStateOf(false) }
 
@@ -204,7 +207,7 @@ fun MainSettingsView(
                 ) {
                     MomoMascotView(
                         size = 50.dp,
-                        animate = true,
+                        animate = appearancePrefs.smoothAnimations,
                         holdingCard = true
                     )
                 }

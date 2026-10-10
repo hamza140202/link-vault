@@ -103,6 +103,7 @@ fun NotesScreen(
     modifier: Modifier = Modifier
 ) {
     val items by viewModel.items.collectAsState()
+    val appearancePrefs by viewModel.appearancePrefs.collectAsState()
     val noteItems = items.filter { !it.notes.isNullOrBlank() }
     val context = LocalContext.current
 
@@ -123,6 +124,7 @@ fun NotesScreen(
             initialTitle = noteToEdit?.title ?: "",
             initialBody = noteToEdit?.notes ?: "",
             isNewNote = (noteToEdit == null),
+            animate = appearancePrefs.smoothAnimations,
             onBack = {
                 isCreatingNewNote = false
                 noteToEdit = null
@@ -204,7 +206,8 @@ fun NotesScreen(
                     EmptyStateView(
                         message = "No notes yet 📝",
                         subMessage = "Tap the + button to jot down a thought, or paste anything from your clipboard.",
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        animate = appearancePrefs.smoothAnimations
                     )
                 } else {
                     LazyColumn(
@@ -338,7 +341,8 @@ fun FullPageNoteEditor(
     isNewNote: Boolean,
     onBack: () -> Unit,
     onSave: (title: String, body: String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    animate: Boolean = true
 ) {
     val context = LocalContext.current
     var title by remember { mutableStateOf(initialTitle) }
@@ -415,7 +419,7 @@ fun FullPageNoteEditor(
                     // Momo Mascot watching cursor
                     MomoMascotView(
                         size = 44.dp,
-                        animate = true,
+                        animate = animate,
                         holdingCard = false,
                         isWriting = true,
                         lookOffsetX = lookX,

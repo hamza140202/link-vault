@@ -112,11 +112,13 @@ object RichTextFormatter {
         // Decode HTML entities
         md = decodeHtmlEntities(md)
 
-        // Fix malformed markdown tags (e.g., "** text **" -> "**text**")
-        md = md.replace(Regex("\\*\\*\\s+"), "**")
-            .replace(Regex("\\s+\\*\\*"), "**")
-            .replace(Regex("(?<!\\*)\\*\\s+"), "*")
-            .replace(Regex("\\s+\\*(?!\\*)"), "*")
+        // Fix malformed markdown tags (e.g., "** text **" -> "**text**") without stripping spaces between words
+        md = md.replace(Regex("\\*\\*\\s*([^\\*\\r\\n]+?)\\s*\\*\\*")) {
+            "**${it.groupValues[1].trim()}**"
+        }
+        md = md.replace(Regex("(?<!\\*)\\*\\s*([^\\*\\r\\n]+?)\\s*\\*(?!\\*)")) {
+            "*${it.groupValues[1].trim()}*"
+        }
 
         // Clean excess blank lines
         md = md.replace(Regex("\n{3,}"), "\n\n")
@@ -208,12 +210,28 @@ object RichTextFormatter {
 
         // Check if clipboard contains a richer formatted version of this text
         try {
+            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+            val clip = clipboard?.primaryClip
+            val clipItem = if (clip != null && clip.itemCount > 0) clip.getItemAt(0) else null
+            val clipPlain = (clipItem?.text?.toString() ?: clipItem?.coerceToText(context)?.toString() ?: "").trim()
+            val pastedTrimmed = pastedText.trim()
+
             val formatted = smartFormatClipboard(context)
             if (!formatted.isNullOrBlank() && formatted != pastedText) {
-                // If the plain version of formatted text matches pastedText, return formatted
-                val plainOfFormatted = formatted.replace(Regex("[#*`~\\[\\]()]"), "").trim()
-                val plainOfPasted = pastedText.trim()
-                if (plainOfFormatted == plainOfPasted || plainOfFormatted.contains(plainOfPasted) || plainOfPasted.contains(plainOfFormatted)) {
+                val normPasted = pastedTrimmed.replace(Regex("[^\\p{L}\\p{N}]"), "")
+                val normClip = clipPlain.replace(Regex("[^\\p{L}\\p{N}]"), "")
+                val normFormatted = formatted.replace(Regex("[^\\p{L}\\p{N}]"), "")
+
+                val plainOfFormatted = formatted.replace(Regex("[-#*`~\\[\\]()•]"), "").trim()
+
+                if (clipPlain == pastedTrimmed ||
+                    clipPlain.contains(pastedTrimmed) ||
+                    pastedTrimmed.contains(clipPlain) ||
+                    plainOfFormatted == pastedTrimmed ||
+                    plainOfFormatted.contains(pastedTrimmed) ||
+                    pastedTrimmed.contains(plainOfFormatted) ||
+                    (normPasted.isNotEmpty() && (normClip == normPasted || normFormatted == normPasted || normFormatted.contains(normPasted) || normPasted.contains(normFormatted)))
+                ) {
                     return formatted
                 }
             }
@@ -353,6 +371,39 @@ object RichTextFormatter {
         Regex("^(#{1,6})\\s*(.+)$", RegexOption.MULTILINE).findAll(markdown).forEach { match ->
             builder.addStyle(
                 SpanStyle(fontWeight = FontWeight.Bold, color = IndigoPrimary),
+                match.range.first,
+                match.range.last + 1
+            )
+        }
+
+        // Strikethrough
+        Regex("~~(.+?)~~").findAll(markdown).forEach { match ->
+            builder.addStyle(
+                SpanStyle(textDecoration = TextDecoration.LineThrough),
+                match.range.first,
+                match.range.last + 1
+            )
+        }
+
+        // Code
+        Regex("`([^`]+)`").findAll(markdown).forEach { match ->
+            builder.addStyle(
+                SpanStyle(
+                    fontFamily = FontFamily.Monospace,
+                    background = if (isDarkTheme) Color(0xFF334155) else Color(0xFFE2E8F0)
+                ),
+                match.range.first,
+                match.range.last + 1
+            )
+        }
+
+        // Links
+        Regex("\\[([^\\]]+)\\]\\(([^\\)]+)\\)").findAll(markdown).forEach { match ->
+            builder.addStyle(
+                SpanStyle(
+                    color = IndigoPrimary,
+                    textDecoration = TextDecoration.Underline
+                ),
                 match.range.first,
                 match.range.last + 1
             )

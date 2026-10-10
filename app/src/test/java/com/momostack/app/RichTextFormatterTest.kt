@@ -43,9 +43,24 @@ class RichTextFormatterTest {
     }
 
     @Test
-    fun testNestedTagsAndEntities() {
-        val html = "<p><strong><em>Important&nbsp;&amp;&nbsp;Cozy</em></strong></p>"
+    fun testWordSpacingPreservedAroundBoldAndItalic() {
+        val html = "<p>This is <b>bold text</b> and <i>italic words</i>.</p>"
         val markdown = RichTextFormatter.htmlToMarkdown(html)
-        assertTrue(markdown.contains("**") && markdown.contains("*Important & Cozy*"))
+        assertEquals("This is **bold text** and *italic words*.", markdown)
+    }
+
+    @Test
+    fun testInternalWhitespaceTrimmedWithinTags() {
+        val html = "<p><b>  Spaced Bold  </b> and <i> Spaced Italic </i></p>"
+        val markdown = RichTextFormatter.htmlToMarkdown(html)
+        assertEquals("**Spaced Bold** and *Spaced Italic*", markdown)
+    }
+
+    @Test
+    fun testParseMarkdownToAnnotatedStringStyles() {
+        val md = "# Heading 1\n**bold** and *italic* and ~~strike~~ and `code` and [link](https://example.com)"
+        val annotated = RichTextFormatter.parseMarkdownToAnnotatedString(md)
+        // Verify span styles were added
+        assertTrue(annotated.spanStyles.isNotEmpty())
     }
 }

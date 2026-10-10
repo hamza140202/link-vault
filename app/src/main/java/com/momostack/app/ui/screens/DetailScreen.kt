@@ -354,7 +354,13 @@ fun DetailScreen(
 
                 OutlinedTextField(
                     value = notesText,
-                    onValueChange = { notesText = it },
+                    onValueChange = { newText ->
+                        if (newText.length > notesText.length + 1) {
+                            notesText = com.momostack.app.util.RichTextFormatter.smartConvertPastedText(newText, context)
+                        } else {
+                            notesText = newText
+                        }
+                    },
                     placeholder = { Text("Add personal notes, reflections, or markdown...") },
                     visualTransformation = com.momostack.app.util.RichTextFormatter.createMarkdownVisualTransformation(),
                     modifier = Modifier

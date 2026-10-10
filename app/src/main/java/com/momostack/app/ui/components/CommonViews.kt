@@ -521,7 +521,8 @@ fun SearchBarView(
 fun EmptyStateView(
     message: String,
     subMessage: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    animate: Boolean = true
 ) {
     Column(
         modifier = modifier
@@ -532,7 +533,7 @@ fun EmptyStateView(
     ) {
         MomoMascotView(
             size = 96.dp,
-            animate = true
+            animate = animate
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(

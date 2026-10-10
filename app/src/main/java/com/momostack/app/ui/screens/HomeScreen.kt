@@ -261,7 +261,8 @@ fun HomeScreen(
                 EmptyStateView(
                     message = emptyMsg,
                     subMessage = emptySubMsg,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    animate = appearancePrefs.smoothAnimations
                 )
             } else {
                 LazyColumn(
