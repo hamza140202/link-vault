@@ -66,11 +66,11 @@ fun CareSubscreen(
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
-                Text(text = "• Total saved links: ${stats.totalLinks}", style = MaterialTheme.typography.bodyMedium)
+                Text(text = "• Total saved items: ${stats.totalLinks}", style = MaterialTheme.typography.bodyMedium)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "• Starred favorites: ${stats.favoriteCount}", style = MaterialTheme.typography.bodyMedium)
+                Text(text = "• Starred favorites: ${stats.favorites}", style = MaterialTheme.typography.bodyMedium)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "• Archived links: ${stats.archivedCount}", style = MaterialTheme.typography.bodyMedium)
+                Text(text = "• Notes and thoughts: ${stats.notes}", style = MaterialTheme.typography.bodyMedium)
             }
         }
 
