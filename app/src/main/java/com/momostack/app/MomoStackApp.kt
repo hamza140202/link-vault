@@ -17,10 +17,14 @@ class MomoStackApp : Application() {
     lateinit var repository: LinkVaultRepository
         private set
 
+    lateinit var userPreferences: com.momostack.app.data.preferences.UserPreferences
+        private set
+
     override fun onCreate() {
         super.onCreate()
         instance = this
 
+        userPreferences = com.momostack.app.data.preferences.UserPreferences(this)
         database = LinkVaultDatabase.getDatabase(this)
         repository = LinkVaultRepository(database.linkItemDao(), database.categoryDao())
 

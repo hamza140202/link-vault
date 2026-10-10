@@ -275,7 +275,7 @@ fun NotesScreen(
                                     Spacer(modifier = Modifier.height(6.dp))
 
                                     Text(
-                                        text = noteBody,
+                                        text = RichTextFormatter.parseMarkdownToAnnotatedString(noteBody),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         maxLines = 3,
@@ -369,22 +369,6 @@ fun FullPageNoteEditor(
     val wordCount = if (text.isBlank()) 0 else text.trim().split("\\s+".toRegex()).size
     val charCount = text.length
 
-    fun insertFormat(prefix: String, suffix: String = "") {
-        val currentText = bodyValue.text
-        val selStart = bodyValue.selection.min
-        val selEnd = bodyValue.selection.max
-        if (selStart != selEnd) {
-            val selected = currentText.substring(selStart, selEnd)
-            val replaced = currentText.replaceRange(selStart, selEnd, "$prefix$selected$suffix")
-            val newPos = selStart + prefix.length + selected.length + suffix.length
-            bodyValue = TextFieldValue(replaced, TextRange(newPos))
-        } else {
-            val replaced = currentText.replaceRange(selStart, selStart, "$prefix$suffix")
-            val newPos = selStart + prefix.length
-            bodyValue = TextFieldValue(replaced, TextRange(newPos))
-        }
-    }
-
     fun pasteFormattedFromClipboard() {
         val formatted = RichTextFormatter.smartFormatClipboard(context)
         if (!formatted.isNullOrBlank()) {
@@ -394,7 +378,7 @@ fun FullPageNoteEditor(
             val replaced = currentText.replaceRange(selStart, selEnd, formatted)
             val newPos = selStart + formatted.length
             bodyValue = TextFieldValue(replaced, TextRange(newPos))
-            Toast.makeText(context, "Pasted formatted text (${formatted.length} chars)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Pasted with formatting (bold, links, headers kept) ✨", Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(context, "Clipboard is empty", Toast.LENGTH_SHORT).show()
         }
@@ -454,6 +438,17 @@ fun FullPageNoteEditor(
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Smart Paste Button
+                    IconButton(
+                        onClick = { pasteFormattedFromClipboard() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Assignment,
+                            contentDescription = "Paste with formatting",
+                            tint = IndigoPrimary
+                        )
+                    }
+
                     // Share Note button
                     IconButton(
                         onClick = {
@@ -467,7 +462,7 @@ fun FullPageNoteEditor(
                         Icon(
                             imageVector = Icons.Filled.Share,
                             contentDescription = "Share note",
-                            tint = IndigoPrimary
+                            tint = Slate500
                         )
                     }
 
@@ -489,60 +484,6 @@ fun FullPageNoteEditor(
                         Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Save", fontWeight = FontWeight.SemiBold)
-                    }
-                }
-            }
-        }
-
-        // Format-Smart Toolbar
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-            border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                FormatChip(label = "H1", onClick = { insertFormat("# ") })
-                FormatChip(label = "H2", onClick = { insertFormat("## ") })
-                FormatChip(label = "H3", onClick = { insertFormat("### ") })
-                FormatChip(label = "Bold", onClick = { insertFormat("**", "**") })
-                FormatChip(label = "Italic", onClick = { insertFormat("*", "*") })
-                FormatChip(label = "• List", onClick = { insertFormat("- ") })
-                FormatChip(label = "1. Num", onClick = { insertFormat("1. ") })
-                FormatChip(label = "[ ] Todo", onClick = { insertFormat("- [ ] ") })
-                FormatChip(label = "> Quote", onClick = { insertFormat("> ") })
-                FormatChip(label = "`Code`", onClick = { insertFormat("`", "`") })
-
-                // Smart Paste Button
-                Surface(
-                    onClick = { pasteFormattedFromClipboard() },
-                    shape = RoundedCornerShape(8.dp),
-                    color = IndigoPrimary.copy(alpha = 0.12f),
-                    border = BorderStroke(1.dp, IndigoPrimary.copy(alpha = 0.4f)),
-                    modifier = Modifier.height(30.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Assignment,
-                            contentDescription = null,
-                            tint = IndigoPrimary,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "Smart Paste",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = IndigoPrimary
-                        )
                     }
                 }
             }
@@ -605,36 +546,12 @@ fun FullPageNoteEditor(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 },
+                visualTransformation = RichTextFormatter.createMarkdownVisualTransformation(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
                 shape = RoundedCornerShape(10.dp),
                 textStyle = MaterialTheme.typography.bodyMedium
-            )
-        }
-    }
-}
-
-@Composable
-private fun FormatChip(
-    label: String,
-    onClick: () -> Unit
-) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
-        modifier = Modifier.height(30.dp)
-    ) {
-        Box(
-            modifier = Modifier.padding(horizontal = 8.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
-                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -737,6 +654,7 @@ fun NoteEditorDialog(
                         bodyValue = newValue
                     },
                     placeholder = { Text("Write your thoughts or paste rich documents...", color = Slate400) },
+                    visualTransformation = RichTextFormatter.createMarkdownVisualTransformation(),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp),

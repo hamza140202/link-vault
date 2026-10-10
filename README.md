@@ -44,4 +44,4 @@ LinkVault builds automatically via GitHub Actions:
 ---
 
 ## 📄 License
-MIT License. Free and open source.
+Private & Proprietary. All rights reserved.

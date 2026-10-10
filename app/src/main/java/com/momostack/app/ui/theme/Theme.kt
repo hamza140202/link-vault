@@ -1,9 +1,12 @@
 package com.momostack.app.ui.theme
 
 import android.app.Activity
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -39,15 +42,31 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun LinkVaultTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: String = "System",
+    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val isSystemDark = isSystemInDarkTheme()
+    val darkTheme = when (themeMode) {
+        "Light" -> false
+        "Dark" -> true
+        else -> isSystemDark
+    }
 
     val view = LocalView.current
-    if (!view.isInEditMode) {
+    val context = view.context
+
+    val colorScheme = when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
+        darkTheme -> DarkColorScheme
+        else -> LightColorScheme
+    }
+
+    if (!view.isInEditMode && context is Activity) {
         SideEffect {
-            val window = (view.context as Activity).window
+            val window = context.window
             window.statusBarColor = colorScheme.background.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }

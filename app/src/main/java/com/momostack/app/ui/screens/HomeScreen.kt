@@ -76,6 +76,7 @@ fun HomeScreen(
     val selectedFilter by viewModel.selectedFilter.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val stats by viewModel.stats.collectAsState()
+    val appearancePrefs by viewModel.appearancePrefs.collectAsState()
     val context = LocalContext.current
 
     var showAddLinkDialog by remember { mutableStateOf(false) }
@@ -306,7 +307,11 @@ fun HomeScreen(
                                         context.startActivity(intent)
                                     } catch (_: Exception) {}
                                 }
-                            }
+                            },
+                            cardDensity = appearancePrefs.cardDensity,
+                            showThumbnails = appearancePrefs.showThumbnails,
+                            showDomain = appearancePrefs.showDomain,
+                            showDescription = appearancePrefs.showDescription
                         )
                     }
                 }

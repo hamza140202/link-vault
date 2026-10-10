@@ -49,6 +49,16 @@ class VaultViewModel(
     private val _stats = MutableStateFlow(VaultStats(0, 0, 0))
     val stats = _stats.asStateFlow()
 
+    val appearancePrefs = LinkVaultApp.instance.userPreferences.appearance
+
+    fun setThemeMode(mode: String) = LinkVaultApp.instance.userPreferences.setThemeMode(mode)
+    fun setDynamicColor(enabled: Boolean) = LinkVaultApp.instance.userPreferences.setDynamicColor(enabled)
+    fun setCardDensity(density: String) = LinkVaultApp.instance.userPreferences.setCardDensity(density)
+    fun setShowThumbnails(show: Boolean) = LinkVaultApp.instance.userPreferences.setShowThumbnails(show)
+    fun setShowDomain(show: Boolean) = LinkVaultApp.instance.userPreferences.setShowDomain(show)
+    fun setShowDescription(show: Boolean) = LinkVaultApp.instance.userPreferences.setShowDescription(show)
+    fun setSmoothAnimations(enabled: Boolean) = LinkVaultApp.instance.userPreferences.setSmoothAnimations(enabled)
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val items: StateFlow<List<LinkItem>> = combine(
         _searchQuery,

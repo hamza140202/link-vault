@@ -356,6 +356,7 @@ fun DetailScreen(
                     value = notesText,
                     onValueChange = { notesText = it },
                     placeholder = { Text("Add personal notes, reflections, or markdown...") },
+                    visualTransformation = com.momostack.app.util.RichTextFormatter.createMarkdownVisualTransformation(),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(180.dp),

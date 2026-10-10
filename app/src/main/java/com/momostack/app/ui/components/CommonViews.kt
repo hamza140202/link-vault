@@ -72,9 +72,24 @@ fun LinkCard(
     onOpenBrowser: () -> Unit,
     onShare: (() -> Unit)? = null,
     onRefresh: (() -> Unit)? = null,
+    cardDensity: String = "Comfortable",
+    showThumbnails: Boolean = true,
+    showDomain: Boolean = true,
+    showDescription: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val cardPadding = when (cardDensity) {
+        "Compact" -> 8.dp
+        "Spacious" -> 16.dp
+        else -> 12.dp
+    }
+    val (thumbWidth, thumbHeight) = when (cardDensity) {
+        "Compact" -> 64.dp to 48.dp
+        "Spacious" -> 96.dp to 72.dp
+        else -> 80.dp to 60.dp
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -92,13 +107,13 @@ fun LinkCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(cardPadding),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Fixed Thumbnail Box (80x60dp, 4:3, radius 12dp)
-            CardThumbnailBox(item = item)
-
-            Spacer(modifier = Modifier.width(12.dp))
+            if (showThumbnails) {
+                CardThumbnailBox(item = item, width = thumbWidth, height = thumbHeight)
+                Spacer(modifier = Modifier.width(if (cardDensity == "Compact") 8.dp else 12.dp))
+            }
 
             // Card Content Wrap
             Column(
@@ -112,14 +127,18 @@ fun LinkCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = (item.domain ?: "note").lowercase(),
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp, fontWeight = FontWeight.SemiBold),
-                        color = Slate500,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false)
-                    )
+                    if (showDomain) {
+                        Text(
+                            text = (item.domain ?: "note").lowercase(),
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp, fontWeight = FontWeight.SemiBold),
+                            color = Slate500,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
@@ -150,18 +169,18 @@ fun LinkCard(
                     text = item.title.ifBlank { item.url.ifBlank { "Untitled Note" } },
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, fontSize = 14.sp),
                     color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
+                    maxLines = if (cardDensity == "Compact") 1 else 2,
                     overflow = TextOverflow.Ellipsis
                 )
 
                 // Description / Note Snippet
                 val snippetText = item.description?.takeIf { it.isNotBlank() } ?: item.notes?.takeIf { it.isNotBlank() }
-                if (!snippetText.isNullOrBlank()) {
+                if (showDescription && !snippetText.isNullOrBlank()) {
                     Text(
                         text = snippetText,
                         style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                         color = Slate500,
-                        maxLines = 1,
+                        maxLines = if (cardDensity == "Spacious") 2 else 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
@@ -299,6 +318,8 @@ fun LinkCard(
 @Composable
 fun CardThumbnailBox(
     item: LinkItem,
+    width: androidx.compose.ui.unit.Dp = 80.dp,
+    height: androidx.compose.ui.unit.Dp = 60.dp,
     modifier: Modifier = Modifier
 ) {
     val isNote = item.url.isBlank() || !item.notes.isNullOrBlank() && item.url.isBlank()
@@ -311,7 +332,7 @@ fun CardThumbnailBox(
 
     Box(
         modifier = modifier
-            .size(width = 80.dp, height = 60.dp)
+            .size(width = width, height = height)
             .clip(RoundedCornerShape(12.dp))
             .background(
                 when {
