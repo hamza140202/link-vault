@@ -42,7 +42,8 @@ enum class SettingsSubscreen {
     PRIVACY,
     ADVANCED,
     ABOUT,
-    HELP
+    HELP,
+    SCREENSHOT_VAULT
 }
 
 data class SettingsItemModel(

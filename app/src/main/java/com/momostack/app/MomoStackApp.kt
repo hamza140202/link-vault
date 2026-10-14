@@ -29,24 +29,52 @@ class MomoStackApp : Application() {
         repository = LinkVaultRepository(database.linkItemDao(), database.categoryDao())
 
         createNotificationChannel()
+
+        if (userPreferences.isAutoCaptureScreenshotsEnabled() &&
+            com.momostack.app.feature.screenshotvault.service.ScreenshotPermissionHelper.hasAllRequiredPermissions(this)) {
+            com.momostack.app.feature.screenshotvault.service.ScreenshotWatcherService.start(this)
+        }
     }
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
+            val captureChannel = NotificationChannel(
                 NOTIFICATION_CHANNEL_ID,
                 "MomoStack Capture & Enrichment",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
                 description = "Notifications confirming captured links and completed enrichment."
             }
+
+            val screenshotServiceChannel = NotificationChannel(
+                SCREENSHOT_SERVICE_CHANNEL_ID,
+                "Screenshot Auto-Capture",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "Ongoing notification while automatic screenshot capture is active."
+                setShowBadge(false)
+            }
+
+            val screenshotResultsChannel = NotificationChannel(
+                SCREENSHOT_RESULTS_CHANNEL_ID,
+                "Screenshot Text Extractions",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notifications when text is ready from captured screenshots."
+                enableVibration(true)
+            }
+
             val notificationManager = getSystemService(NotificationManager::class.java)
-            notificationManager?.createNotificationChannel(channel)
+            notificationManager?.createNotificationChannel(captureChannel)
+            notificationManager?.createNotificationChannel(screenshotServiceChannel)
+            notificationManager?.createNotificationChannel(screenshotResultsChannel)
         }
     }
 
     companion object {
         const val NOTIFICATION_CHANNEL_ID = "momostack_capture_channel"
+        const val SCREENSHOT_SERVICE_CHANNEL_ID = "momostack_screenshot_service_channel"
+        const val SCREENSHOT_RESULTS_CHANNEL_ID = "momostack_screenshot_results_channel"
 
         lateinit var instance: MomoStackApp
             private set
