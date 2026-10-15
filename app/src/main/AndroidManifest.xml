@@ -4,6 +4,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application
         android:name=".MomoStackApp"
@@ -53,6 +57,17 @@
                 <data android:mimeType="*/*" />
             </intent-filter>
         </activity>
+
+        <!-- Background Screenshot Watcher Service (Isolated OCR & Auto-Capture) -->
+        <service
+            android:name=".feature.screenshotvault.service.ScreenshotWatcherService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
+
+        <!-- Notification Quick Copy Receiver -->
+        <receiver
+            android:name=".feature.screenshotvault.service.CopyTextReceiver"
+            android:exported="false" />
 
     </application>
 

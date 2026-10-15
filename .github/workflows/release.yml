@@ -70,3 +70,7 @@ jobs:
             release-assets/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send APK to Telegram
+        run: python3 scripts/send_to_telegram.py "${{ github.event.inputs.version || github.ref_name }}"
+

@@ -14,12 +14,15 @@ android {
         applicationId = "com.momostack.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 14
-        versionName = "1.0.13"
+        versionCode = 19
+        versionName = "1.0.14"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+        ndk {
+            abiFilters.add("arm64-v8a")
         }
     }
 
@@ -92,6 +95,9 @@ dependencies {
 
     // Kotlinx Serialization
     implementation(libs.kotlinx.serialization.json)
+
+    // ML Kit On-Device Text Recognition
+    implementation(libs.mlkit.text.recognition)
 
     // Testing
     testImplementation(libs.junit)

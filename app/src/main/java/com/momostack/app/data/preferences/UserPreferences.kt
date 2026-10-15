@@ -69,6 +69,14 @@ class UserPreferences(context: Context) {
         _appearance.value = _appearance.value.copy(smoothAnimations = enabled)
     }
 
+    fun isAutoCaptureScreenshotsEnabled(): Boolean {
+        return prefs.getBoolean(KEY_AUTO_CAPTURE_SCREENSHOTS, false)
+    }
+
+    fun setAutoCaptureScreenshotsEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_AUTO_CAPTURE_SCREENSHOTS, enabled).apply()
+    }
+
     companion object {
         private const val KEY_THEME_MODE = "pref_theme_mode"
         private const val KEY_DYNAMIC_COLOR = "pref_dynamic_color"
@@ -77,5 +85,6 @@ class UserPreferences(context: Context) {
         private const val KEY_SHOW_DOMAIN = "pref_show_domain"
         private const val KEY_SHOW_DESCRIPTION = "pref_show_description"
         private const val KEY_SMOOTH_ANIMATIONS = "pref_smooth_animations"
+        private const val KEY_AUTO_CAPTURE_SCREENSHOTS = "pref_auto_capture_screenshots"
     }
 }

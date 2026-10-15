@@ -27,6 +27,7 @@ import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.Science
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Shield
@@ -64,6 +65,7 @@ import com.momostack.app.ui.screens.settings.PrivacySubscreen
 import com.momostack.app.ui.screens.settings.SettingsItemModel
 import com.momostack.app.ui.screens.settings.SettingsRowItem
 import com.momostack.app.ui.screens.settings.SettingsSubscreen
+import com.momostack.app.feature.screenshotvault.ui.ScreenshotVaultScreen
 import com.momostack.app.ui.theme.IndigoPrimary
 import com.momostack.app.ui.theme.Slate400
 import com.momostack.app.ui.theme.Slate500
@@ -125,6 +127,15 @@ fun SettingsScreen(
         SettingsSubscreen.HELP -> HelpSubscreen(
             onBack = { activeSubscreen = SettingsSubscreen.MAIN },
             modifier = modifier
+        )
+        SettingsSubscreen.SCREENSHOT_VAULT -> ScreenshotVaultScreen(
+            onNavigateBack = { activeSubscreen = SettingsSubscreen.MAIN },
+            onSaveAsNote = { noteText ->
+                viewModel.saveDirectNote(
+                    noteContent = noteText,
+                    title = "Screenshot Note"
+                )
+            }
         )
     }
 }
@@ -249,6 +260,7 @@ fun MainSettingsView(
             SettingsItemModel("Library", "How your saved items look and sort", Icons.Outlined.Folder, SettingsSubscreen.LIBRARY),
             SettingsItemModel("Categories & Folders", "Organize into folders and tags", Icons.Outlined.Label, SettingsSubscreen.CATEGORIES),
             SettingsItemModel("Notes", "Writing companion and smart paste", Icons.Outlined.Description, SettingsSubscreen.NOTES),
+            SettingsItemModel("Screenshot Vault", "Auto-save screenshots & extract text (Labs)", Icons.Outlined.PhotoLibrary, SettingsSubscreen.SCREENSHOT_VAULT),
             SettingsItemModel("Backup & Restore", "Save a copy of your stuff safely", Icons.Outlined.CloudUpload, SettingsSubscreen.BACKUP),
             SettingsItemModel("Privacy & Safety", "Your data stays on your phone", Icons.Outlined.Shield, SettingsSubscreen.PRIVACY),
             SettingsItemModel("Care & Maintenance", "Refresh previews and tidy up", Icons.Outlined.Science, SettingsSubscreen.ADVANCED)
