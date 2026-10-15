@@ -72,20 +72,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Send APK to Telegram
-        run: |
-          python3 -c "
-          import requests
-          url = 'https://api.telegram.org/bot8698545201:AAFU8Xe_ScRjdW5a0RjEJrbgOH5FibKmylY/sendDocument'
-          caption = '''🚀 MomoStack ${{ github.event.inputs.version || github.ref_name }} Release
-
-✨ Updates:
-• Screenshot Auto-Capture across all Android OEMs
-• Notifications: 📸 Screenshot Captured & ✨ Transcription Completed with 1-tap [Copy Text]
-• Direct Image Sharing into Screenshot Vault with instant OCR
-• Editable & Selectable OCR Text Field
-• Isolated Room DB & On-Device ML Kit'''
-          with open('release-assets/momostack-release.apk', 'rb') as f:
-              r = requests.post(url, data={'chat_id': '1263089875', 'caption': caption}, files={'document': ('momostack-${{ github.event.inputs.version || github.ref_name }}.apk', f)}, timeout=60)
-              print('Telegram response:', r.status_code, r.text)
-          "
+        run: python3 scripts/send_to_telegram.py "${{ github.event.inputs.version || github.ref_name }}"
 
