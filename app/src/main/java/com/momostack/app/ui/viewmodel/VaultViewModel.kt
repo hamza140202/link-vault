@@ -270,14 +270,36 @@ class VaultViewModel(
         }
     }
 
-    suspend fun exportBackupJson(): String {
+    suspend fun createAndSaveBackupFile(context: android.content.Context): Result<com.momostack.app.backup.BackupCreationResult> {
         val db = LinkVaultApp.instance.database
-        return BackupManager.createBackupJson(db.linkItemDao(), db.categoryDao())
+        return com.momostack.app.backup.BackupManager.createAndSaveBackupFile(context, db.linkItemDao(), db.categoryDao())
     }
 
-    suspend fun restoreBackupJson(jsonString: String, clearExisting: Boolean): RestoreResult {
+    suspend fun restoreBackupFromUri(context: android.content.Context, uri: android.net.Uri): com.momostack.app.backup.RestoreResult {
         val db = LinkVaultApp.instance.database
-        val result = BackupManager.restoreFromJson(jsonString, db.linkItemDao(), db.categoryDao(), clearExisting)
+        val result = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                    ?: return@withContext com.momostack.app.backup.RestoreResult.Error("Unable to open the selected backup file")
+                inputStream.use { stream ->
+                    com.momostack.app.backup.BackupManager.restoreFromInputStream(context, stream, db.linkItemDao(), db.categoryDao())
+                }
+            } catch (e: Exception) {
+                com.momostack.app.backup.RestoreResult.Error("Failed to access backup file: ${e.localizedMessage ?: "Unknown error"}")
+            }
+        }
+        refreshStats()
+        return result
+    }
+
+    suspend fun exportBackupJson(context: android.content.Context): String {
+        val db = LinkVaultApp.instance.database
+        return com.momostack.app.backup.BackupManager.createBackupJson(context, db.linkItemDao(), db.categoryDao())
+    }
+
+    suspend fun restoreBackupJson(context: android.content.Context, jsonString: String, clearExisting: Boolean = false): com.momostack.app.backup.RestoreResult {
+        val db = LinkVaultApp.instance.database
+        val result = com.momostack.app.backup.BackupManager.restoreFromJson(context, jsonString, db.linkItemDao(), db.categoryDao(), clearExisting)
         refreshStats()
         return result
     }

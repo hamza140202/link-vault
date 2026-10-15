@@ -37,4 +37,10 @@ interface ScreenshotDao {
 
     @Query("SELECT originalUri FROM screenshots")
     suspend fun getAllOriginalUris(): List<String>
+
+    @Query("SELECT * FROM screenshots ORDER BY createdAt DESC")
+    suspend fun getAllScreenshotsList(): List<ScreenshotEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(screenshots: List<ScreenshotEntity>)
 }

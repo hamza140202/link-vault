@@ -53,4 +53,37 @@ class BackupManagerTest {
         assertEquals("Kotlin Programming Language", deserialized.items[0].title)
         assertTrue(deserialized.items[0].isFavorite)
     }
+
+    @Test
+    fun testBackupPayloadV2WithScreenshots() {
+        val testItem = LinkItem(
+            id = "item-1",
+            url = "https://github.com",
+            title = "GitHub",
+            domain = "github.com",
+            notes = "Code hosting"
+        )
+        val screenshot = com.momostack.app.backup.ScreenshotBackupItem(
+            originalUri = "content://media/external/images/media/42",
+            extractedText = "Meeting at 3 PM on Monday",
+            userNotes = "Important meeting note",
+            isFavorite = true
+        )
+
+        val payload = BackupPayload(
+            backupVersion = 2,
+            appVersion = "1.0.15",
+            items = listOf(testItem),
+            screenshots = listOf(screenshot)
+        )
+
+        val serialized = json.encodeToString(payload)
+        val deserialized = json.decodeFromString<BackupPayload>(serialized)
+
+        assertEquals(2, deserialized.backupVersion)
+        assertEquals(1, deserialized.items.size)
+        assertEquals(1, deserialized.screenshots.size)
+        assertEquals("Meeting at 3 PM on Monday", deserialized.screenshots[0].extractedText)
+        assertTrue(deserialized.screenshots[0].isFavorite)
+    }
 }
