@@ -35,7 +35,11 @@ data class LinkItemEntity(
     val faviconUrl: String?,
     val previewImageUrl: String?,
     val createdAt: Long,
-    val updatedAt: Long
+    val updatedAt: Long,
+    val offlinePdfPath: String? = null,
+    val offlinePdfSize: Long = 0L,
+    val offlinePdfCreatedAt: Long? = null,
+    val offlinePdfStatus: String = "NONE"
 ) {
     fun toDomain(): LinkItem {
         val parsedTags = try {
@@ -47,6 +51,11 @@ data class LinkItemEntity(
             ProcessingStatus.valueOf(status)
         } catch (_: Exception) {
             ProcessingStatus.PENDING
+        }
+        val parsedOfflineStatus = try {
+            com.momostack.app.data.model.OfflineArchiveStatus.valueOf(offlinePdfStatus)
+        } catch (_: Exception) {
+            com.momostack.app.data.model.OfflineArchiveStatus.NONE
         }
 
         return LinkItem(
@@ -65,7 +74,11 @@ data class LinkItemEntity(
             faviconUrl = faviconUrl,
             previewImageUrl = previewImageUrl,
             createdAt = createdAt,
-            updatedAt = updatedAt
+            updatedAt = updatedAt,
+            offlinePdfPath = offlinePdfPath,
+            offlinePdfSize = offlinePdfSize,
+            offlinePdfCreatedAt = offlinePdfCreatedAt,
+            offlinePdfStatus = parsedOfflineStatus
         )
     }
 
@@ -87,7 +100,11 @@ data class LinkItemEntity(
                 faviconUrl = item.faviconUrl,
                 previewImageUrl = item.previewImageUrl,
                 createdAt = item.createdAt,
-                updatedAt = item.updatedAt
+                updatedAt = item.updatedAt,
+                offlinePdfPath = item.offlinePdfPath,
+                offlinePdfSize = item.offlinePdfSize,
+                offlinePdfCreatedAt = item.offlinePdfCreatedAt,
+                offlinePdfStatus = item.offlinePdfStatus.name
             )
         }
     }

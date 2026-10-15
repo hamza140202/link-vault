@@ -80,6 +80,9 @@ interface LinkItemDao {
     @Query("SELECT * FROM link_items")
     suspend fun getAllList(): List<LinkItemEntity>
 
+    @Query("UPDATE link_items SET offlinePdfStatus = :status, offlinePdfPath = :path, offlinePdfSize = :size, offlinePdfCreatedAt = :createdAt WHERE id = :id")
+    suspend fun updateOfflinePdf(id: String, status: String, path: String?, size: Long, createdAt: Long?)
+
     @Query("DELETE FROM link_items")
     suspend fun clearAll()
 }

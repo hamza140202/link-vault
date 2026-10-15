@@ -281,4 +281,20 @@ class VaultViewModel(
         refreshStats()
         return result
     }
+
+    fun archiveWebPage(context: android.content.Context, item: LinkItem) {
+        viewModelScope.launch {
+            com.momostack.app.feature.webarchive.OfflineWebArchiveManager.archiveWebPage(
+                context = context,
+                repository = repository,
+                item = item
+            )
+        }
+    }
+
+    fun deleteOfflineArchive(itemId: String) {
+        viewModelScope.launch {
+            repository.removeOfflineArchive(itemId)
+        }
+    }
 }

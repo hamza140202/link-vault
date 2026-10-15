@@ -165,6 +165,41 @@ class LinkVaultRepository(
         categoryDao.insertCategory(category)
     }
 
+    suspend fun updateOfflineArchive(
+        id: String,
+        status: com.momostack.app.data.model.OfflineArchiveStatus,
+        pdfPath: String? = null,
+        size: Long = 0L
+    ) {
+        val now = if (status == com.momostack.app.data.model.OfflineArchiveStatus.READY) System.currentTimeMillis() else null
+        linkItemDao.updateOfflinePdf(
+            id = id,
+            status = status.name,
+            path = pdfPath,
+            size = size,
+            createdAt = now
+        )
+    }
+
+    suspend fun removeOfflineArchive(id: String) {
+        val item = getItemById(id) ?: return
+        item.offlinePdfPath?.let { path ->
+            try {
+                val file = java.io.File(path)
+                if (file.exists()) file.delete()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        linkItemDao.updateOfflinePdf(
+            id = id,
+            status = com.momostack.app.data.model.OfflineArchiveStatus.NONE.name,
+            path = null,
+            size = 0L,
+            createdAt = null
+        )
+    }
+
     suspend fun getStats(): VaultStats {
         return VaultStats(
             totalLinks = linkItemDao.countTotal(),

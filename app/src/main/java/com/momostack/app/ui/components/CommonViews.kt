@@ -208,16 +208,35 @@ fun LinkCard(
                         else -> MaterialTheme.colorScheme.onSurfaceVariant
                     }
 
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = tagBg
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Text(
-                            text = item.category,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                            color = tagText
-                        )
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = tagBg
+                        ) {
+                            Text(
+                                text = item.category,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                color = tagText
+                            )
+                        }
+
+                        if (item.offlinePdfStatus == com.momostack.app.data.model.OfflineArchiveStatus.READY) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = IndigoPrimary.copy(alpha = 0.12f)
+                            ) {
+                                Text(
+                                    text = "📄 PDF Ready",
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                    color = IndigoPrimary
+                                )
+                            }
+                        }
                     }
 
                     Row(verticalAlignment = Alignment.CenterVertically) {

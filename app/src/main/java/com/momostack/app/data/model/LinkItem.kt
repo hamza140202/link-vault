@@ -11,6 +11,14 @@ enum class ProcessingStatus {
 }
 
 @Serializable
+enum class OfflineArchiveStatus {
+    NONE,
+    EXTRACTING,
+    READY,
+    FAILED
+}
+
+@Serializable
 data class LinkItem(
     val id: String,
     val url: String,
@@ -27,5 +35,9 @@ data class LinkItem(
     val faviconUrl: String? = null,
     val previewImageUrl: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = System.currentTimeMillis()
+    val updatedAt: Long = System.currentTimeMillis(),
+    val offlinePdfPath: String? = null,
+    val offlinePdfSize: Long = 0L,
+    val offlinePdfCreatedAt: Long? = null,
+    val offlinePdfStatus: OfflineArchiveStatus = OfflineArchiveStatus.NONE
 )

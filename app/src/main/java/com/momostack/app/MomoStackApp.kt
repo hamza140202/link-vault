@@ -64,10 +64,20 @@ class MomoStackApp : Application() {
                 enableVibration(true)
             }
 
+            val webArchiveChannel = NotificationChannel(
+                WEB_ARCHIVE_CHANNEL_ID,
+                "Webpage Offline Archival",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notifications when web pages are saved offline as shareable PDF documents."
+                enableVibration(true)
+            }
+
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager?.createNotificationChannel(captureChannel)
             notificationManager?.createNotificationChannel(screenshotServiceChannel)
             notificationManager?.createNotificationChannel(screenshotResultsChannel)
+            notificationManager?.createNotificationChannel(webArchiveChannel)
         }
     }
 
@@ -75,6 +85,7 @@ class MomoStackApp : Application() {
         const val NOTIFICATION_CHANNEL_ID = "momostack_capture_channel"
         const val SCREENSHOT_SERVICE_CHANNEL_ID = "momostack_screenshot_service_channel"
         const val SCREENSHOT_RESULTS_CHANNEL_ID = "momostack_screenshot_results_channel"
+        const val WEB_ARCHIVE_CHANNEL_ID = "momostack_web_archive_channel"
 
         lateinit var instance: MomoStackApp
             private set

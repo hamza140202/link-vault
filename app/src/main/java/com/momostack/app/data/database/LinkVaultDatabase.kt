@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [LinkItemEntity::class, CategoryEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class LinkVaultDatabase : RoomDatabase() {
@@ -27,6 +27,15 @@ abstract class LinkVaultDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: LinkVaultDatabase? = null
 
+        val MIGRATION_1_2 = object : androidx.room.migration.Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE link_items ADD COLUMN offlinePdfPath TEXT DEFAULT NULL")
+                db.execSQL("ALTER TABLE link_items ADD COLUMN offlinePdfSize INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE link_items ADD COLUMN offlinePdfCreatedAt INTEGER DEFAULT NULL")
+                db.execSQL("ALTER TABLE link_items ADD COLUMN offlinePdfStatus TEXT NOT NULL DEFAULT 'NONE'")
+            }
+        }
+
         fun getDatabase(context: Context): LinkVaultDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -34,6 +43,7 @@ abstract class LinkVaultDatabase : RoomDatabase() {
                     LinkVaultDatabase::class.java,
                     "link_vault.db"
                 )
+                    .addMigrations(MIGRATION_1_2)
                     .addCallback(DatabaseCallback())
                     .build()
                 INSTANCE = instance

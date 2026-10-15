@@ -73,6 +73,7 @@ fun DetailScreen(
     item: LinkItem,
     viewModel: VaultViewModel,
     onBack: () -> Unit,
+    onOpenReader: ((LinkItem) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -320,6 +321,134 @@ fun DetailScreen(
                     }
                 }
             )
+        }
+
+        // Section: Offline Document & Reader
+        if (item.url.isNotBlank()) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "OFFLINE DOCUMENT & READER",
+                            style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp, fontWeight = FontWeight.Bold),
+                            color = IndigoPrimary
+                        )
+
+                        if (item.offlinePdfStatus == com.momostack.app.data.model.OfflineArchiveStatus.READY) {
+                            val sizeMb = item.offlinePdfSize / (1024.0 * 1024.0)
+                            val sizeText = if (sizeMb >= 1.0) String.format("%.1f MB", sizeMb) else "${item.offlinePdfSize / 1024} KB"
+                            Text(
+                                text = "PDF · $sizeText",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Slate500
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    when (item.offlinePdfStatus) {
+                        com.momostack.app.data.model.OfflineArchiveStatus.READY -> {
+                            Text(
+                                text = "Full visual webpage is saved on your device as a vector PDF. You can read it offline anytime or share it as a document.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(14.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Button(
+                                    onClick = { onOpenReader?.invoke(item) },
+                                    modifier = Modifier.weight(1f),
+                                    colors = ButtonDefaults.buttonColors(containerColor = IndigoPrimary),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Text("📖 Read Offline")
+                                }
+
+                                OutlinedButton(
+                                    onClick = {
+                                        val shareIntent = com.momostack.app.feature.webarchive.OfflineWebArchiveManager.getSharePdfIntent(context, item)
+                                        if (shareIntent != null) {
+                                            context.startActivity(android.content.Intent.createChooser(shareIntent, "Share Offline PDF"))
+                                        } else {
+                                            Toast.makeText(context, "PDF file not found", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Share PDF")
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            TextButton(
+                                onClick = {
+                                    viewModel.deleteOfflineArchive(item.id)
+                                    Toast.makeText(context, "Offline document deleted", Toast.LENGTH_SHORT).show()
+                                },
+                                modifier = Modifier.align(Alignment.End)
+                            ) {
+                                Text("Delete Offline File", color = MaterialTheme.colorScheme.error)
+                            }
+                        }
+                        com.momostack.app.data.model.OfflineArchiveStatus.EXTRACTING -> {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = "Rendering Webpage to PDF...",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = "Capturing styles, fonts, and layout in background",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Slate500
+                                    )
+                                }
+                            }
+                        }
+                        else -> {
+                            Text(
+                                text = "Save the complete webpage with all graphics, styling, and typography into a standalone PDF document for offline reading.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Slate500
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Button(
+                                onClick = {
+                                    viewModel.archiveWebPage(context, item)
+                                    Toast.makeText(context, "📄 Archiving webpage in background...", Toast.LENGTH_SHORT).show()
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = IndigoPrimary),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text("📄 Save as Offline PDF Document")
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(20.dp))

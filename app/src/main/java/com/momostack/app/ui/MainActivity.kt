@@ -93,11 +93,13 @@ enum class MainTab {
 class MainActivity : ComponentActivity() {
 
     private val viewModel: VaultViewModel by viewModels()
+    private var initialReaderItem by mutableStateOf<LinkItem?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         handleShareIntent(intent)
+        handleExtraRoute(intent)
 
         setContent {
             val appearancePrefs by viewModel.appearancePrefs.collectAsState()
@@ -105,7 +107,11 @@ class MainActivity : ComponentActivity() {
                 themeMode = appearancePrefs.themeMode,
                 dynamicColor = appearancePrefs.dynamicColor
             ) {
-                MainAppScaffold(viewModel = viewModel)
+                MainAppScaffold(
+                    viewModel = viewModel,
+                    initialReaderItem = initialReaderItem,
+                    onClearInitialReaderItem = { initialReaderItem = null }
+                )
             }
         }
     }
@@ -113,6 +119,22 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleShareIntent(intent)
+        handleExtraRoute(intent)
+    }
+
+    private fun handleExtraRoute(intent: Intent?) {
+        val extraRoute = intent?.getStringExtra(EXTRA_ROUTE) ?: return
+        if (extraRoute.startsWith("offline_reader/")) {
+            val itemId = extraRoute.removePrefix("offline_reader/")
+            lifecycleScope.launch {
+                val item = withContext(Dispatchers.IO) {
+                    LinkVaultApp.instance.repository.getItemById(itemId)
+                }
+                if (item != null) {
+                    initialReaderItem = item
+                }
+            }
+        }
     }
 
     private fun handleShareIntent(intent: Intent?) {
@@ -224,18 +246,30 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainAppScaffold(viewModel: VaultViewModel) {
+fun MainAppScaffold(
+    viewModel: VaultViewModel,
+    initialReaderItem: LinkItem? = null,
+    onClearInitialReaderItem: () -> Unit = {}
+) {
     var selectedTab by remember { mutableStateOf(MainTab.HOME) }
     var selectedItemForDetail by remember { mutableStateOf<LinkItem?>(null) }
+    var selectedItemForOfflineReader by remember { mutableStateOf<LinkItem?>(null) }
     var showQuickAddChoice by remember { mutableStateOf(false) }
     var showAddLinkDialog by remember { mutableStateOf(false) }
     var showCreateNoteDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
+    LaunchedEffect(initialReaderItem) {
+        if (initialReaderItem != null) {
+            selectedItemForOfflineReader = initialReaderItem
+            onClearInitialReaderItem()
+        }
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            if (selectedItemForDetail == null) {
+            if (selectedItemForDetail == null && selectedItemForOfflineReader == null) {
                 MomoBottomNavigationBar(
                     selectedTab = selectedTab,
                     onTabSelected = { selectedTab = it },
@@ -244,7 +278,19 @@ fun MainAppScaffold(viewModel: VaultViewModel) {
             }
         }
     ) { innerPadding ->
-        if (selectedItemForDetail != null) {
+        if (selectedItemForOfflineReader != null) {
+            BackHandler {
+                selectedItemForOfflineReader = null
+            }
+            com.momostack.app.feature.webarchive.ui.OfflineReaderScreen(
+                item = selectedItemForOfflineReader!!,
+                onBack = { selectedItemForOfflineReader = null },
+                onDeleteArchive = {
+                    viewModel.deleteOfflineArchive(selectedItemForOfflineReader!!.id)
+                    selectedItemForOfflineReader = null
+                }
+            )
+        } else if (selectedItemForDetail != null) {
             BackHandler {
                 selectedItemForDetail = null
             }
@@ -252,6 +298,7 @@ fun MainAppScaffold(viewModel: VaultViewModel) {
                 item = selectedItemForDetail!!,
                 viewModel = viewModel,
                 onBack = { selectedItemForDetail = null },
+                onOpenReader = { selectedItemForOfflineReader = it },
                 modifier = Modifier.padding(innerPadding)
             )
         } else {

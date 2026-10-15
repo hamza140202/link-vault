@@ -16,6 +16,7 @@ MomoStack is a high-performance, local-first Android capture system and library 
   - `✨ Transcription Completed` with preview and a headless **`[Copy Text]`** action button to copy straight to your clipboard without opening the app.
 - **🖼️ Direct Image Sharing Interception**: Sending screenshots or images from the system Share Sheet directly routes them into the Screenshot Vault and initiates OCR, rather than dumping them as plain text notes.
 - **✏️ Editable & Selectable OCR Text**: Tap into the transcription inside the Screenshot Detail sheet to edit wording or select and copy specific sections.
+- **📄 Offline Web Page Archival & Shareable PDF (Beta)**: Convert any saved article, report, or webpage into a standalone, publication-grade vector PDF document. Read offline anytime inside MomoStack with an embedded gesture-supported reader (Light/Sepia/Dark modes) or share directly to Telegram, WhatsApp, Gmail, or Files via the Android Share Sheet.
 - **Background URL Enrichment**: WorkManager extracts OpenGraph titles, descriptions, favicons, and canonical links safely without blocking the UI.
 - **Heuristic Auto-Categorization**: Intelligent rule and keyword classifier tags items into clean categories (Development, Reading, Entertainment, Shopping, Finance, etc.) with safe "Uncategorized" fallback.
 - **First-Class Notes & Extreme Clipboard**: Real notes with 1-tap clipboard paste supporting large payloads, Unicode, and rich formatting.
