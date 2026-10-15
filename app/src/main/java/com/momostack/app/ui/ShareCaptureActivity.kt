@@ -40,6 +40,20 @@ class ShareCaptureActivity : ComponentActivity() {
             return
         }
 
+        val imageUri: android.net.Uri? = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(Intent.EXTRA_STREAM, android.net.Uri::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableExtra(Intent.EXTRA_STREAM)
+        } ?: intent.clipData?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.uri
+
+        val isImageShare = intent.type?.startsWith("image/") == true || imageUri != null
+
+        if (isImageShare && imageUri != null) {
+            handleImageShare(imageUri)
+            return
+        }
+
         var sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
             ?: intent.getStringExtra(Intent.EXTRA_SUBJECT)
             ?: ""
@@ -118,5 +132,71 @@ class ShareCaptureActivity : ComponentActivity() {
 
             finishAndRemoveTask()
         }
+    }
+
+    private fun handleImageShare(imageUri: android.net.Uri) {
+        lifecycleScope.launch {
+            Toast.makeText(applicationContext, "📸 Saving to Screenshot Vault...", Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.IO) {
+                try {
+                    val db = com.momostack.app.feature.screenshotvault.data.ScreenshotVaultDatabase.getDatabase(applicationContext)
+                    val repo = com.momostack.app.feature.screenshotvault.data.ScreenshotVaultRepository(applicationContext, db.screenshotDao())
+                    val saved = repo.importScreenshotFromUri(imageUri)
+
+                    val notificationId = (saved.id % 10000).toInt() + 1000
+                    showScreenshotCompletionNotification(notificationId, saved.extractedText)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
+            Toast.makeText(applicationContext, "✨ Screenshot & text saved to Vault!", Toast.LENGTH_SHORT).show()
+            finishAndRemoveTask()
+        }
+    }
+
+    private fun showScreenshotCompletionNotification(notificationId: Int, text: String) {
+        val copyIntent = Intent(this, com.momostack.app.feature.screenshotvault.service.CopyTextReceiver::class.java).apply {
+            action = com.momostack.app.feature.screenshotvault.service.CopyTextReceiver.ACTION_COPY_TEXT
+            putExtra(com.momostack.app.feature.screenshotvault.service.CopyTextReceiver.EXTRA_TEXT, text)
+            putExtra(com.momostack.app.feature.screenshotvault.service.CopyTextReceiver.EXTRA_NOTIFICATION_ID, notificationId)
+        }
+        val copyPendingIntent = android.app.PendingIntent.getBroadcast(
+            this,
+            notificationId,
+            copyIntent,
+            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val openIntent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(MainActivity.EXTRA_ROUTE, "settings")
+        }
+        val openPendingIntent = android.app.PendingIntent.getActivity(
+            this,
+            notificationId + 1,
+            openIntent,
+            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val builder = androidx.core.app.NotificationCompat.Builder(this, com.momostack.app.MomoStackApp.SCREENSHOT_RESULTS_CHANNEL_ID)
+            .setSmallIcon(com.momostack.app.R.mipmap.ic_launcher)
+            .setContentTitle("✨ Transcription Completed")
+            .setContentText(if (text.isBlank()) "Screenshot saved to your Vault." else text.take(80))
+            .setStyle(androidx.core.app.NotificationCompat.BigTextStyle().bigText(text.ifBlank { "Screenshot saved to your Vault." }))
+            .setPriority(androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(openPendingIntent)
+
+        if (text.isNotBlank()) {
+            builder.addAction(
+                android.R.drawable.ic_menu_send,
+                "Copy Text",
+                copyPendingIntent
+            )
+        }
+
+        val manager = getSystemService(android.app.NotificationManager::class.java)
+        manager?.notify(notificationId, builder.build())
     }
 }

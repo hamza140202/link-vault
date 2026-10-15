@@ -14,15 +14,15 @@ android {
         applicationId = "com.momostack.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 16
-        versionName = "1.0.14-beta2"
+        versionCode = 17
+        versionName = "1.0.14-beta3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
         ndk {
-            abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a"))
+            abiFilters.add("arm64-v8a")
         }
     }
 

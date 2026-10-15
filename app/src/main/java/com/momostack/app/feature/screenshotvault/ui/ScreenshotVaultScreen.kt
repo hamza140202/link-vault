@@ -267,19 +267,22 @@ fun ScreenshotVaultScreen(
         ScreenshotDetailDialog(
             screenshot = screenshot,
             onDismiss = { viewModel.selectScreenshot(null) },
-            onCopyText = {
+            onUpdateText = { newText ->
+                viewModel.updateNotes(screenshot.id, newText)
+            },
+            onCopyText = { textToCopy ->
                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                clipboard.setPrimaryClip(ClipData.newPlainText("Screenshot Text", screenshot.extractedText))
+                clipboard.setPrimaryClip(ClipData.newPlainText("Screenshot Text", textToCopy))
                 Toast.makeText(context, "Text copied to clipboard!", Toast.LENGTH_SHORT).show()
             },
-            onSaveToNotes = {
-                onSaveAsNote(screenshot.extractedText)
+            onSaveToNotes = { textToSave ->
+                onSaveAsNote(textToSave)
                 Toast.makeText(context, "Saved to Momo Notes!", Toast.LENGTH_SHORT).show()
             },
-            onShare = {
+            onShare = { textToShare ->
                 val intent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, screenshot.extractedText)
+                    putExtra(Intent.EXTRA_TEXT, textToShare)
                 }
                 context.startActivity(Intent.createChooser(intent, "Share Extracted Text"))
             },
@@ -434,15 +437,19 @@ fun ScreenshotCard(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScreenshotDetailDialog(
     screenshot: ScreenshotEntity,
     onDismiss: () -> Unit,
-    onCopyText: () -> Unit,
-    onSaveToNotes: () -> Unit,
-    onShare: () -> Unit,
+    onUpdateText: (String) -> Unit,
+    onCopyText: (String) -> Unit,
+    onSaveToNotes: (String) -> Unit,
+    onShare: (String) -> Unit,
     onDelete: () -> Unit
 ) {
+    var editableText by remember(screenshot.id) { mutableStateOf(screenshot.extractedText) }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
@@ -495,7 +502,7 @@ fun ScreenshotDetailDialog(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FilledTonalButton(
-                    onClick = onCopyText,
+                    onClick = { onCopyText(editableText) },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -509,7 +516,7 @@ fun ScreenshotDetailDialog(
                 }
 
                 Button(
-                    onClick = onSaveToNotes,
+                    onClick = { onSaveToNotes(editableText) },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -523,7 +530,7 @@ fun ScreenshotDetailDialog(
                 }
 
                 IconButton(
-                    onClick = onShare,
+                    onClick = { onShare(editableText) },
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                         .size(40.dp)
@@ -534,27 +541,40 @@ fun ScreenshotDetailDialog(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Transcription Body Box
-            Text(
-                text = "Extracted Text (${screenshot.characterCount} chars, ${screenshot.wordCount} words):",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary
-            )
+            // Transcription Body Box (Editable & Selectable)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Extracted Text (${editableText.length} chars):",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "Tap to edit or select part",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
+            OutlinedTextField(
+                value = editableText,
+                onValueChange = { newText ->
+                    editableText = newText
+                    onUpdateText(newText)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 160.dp, max = 340.dp),
                 shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-            ) {
-                Text(
-                    text = screenshot.extractedText.ifBlank { "No readable text detected." },
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
+                placeholder = { Text("No readable text detected. You can type or edit here...") },
+                textStyle = MaterialTheme.typography.bodyMedium
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
         }
