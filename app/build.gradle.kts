@@ -14,8 +14,8 @@ android {
         applicationId = "com.momostack.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 18
-        versionName = "1.0.14-beta4"
+        versionCode = 19
+        versionName = "1.0.14"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
