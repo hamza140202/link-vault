@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.momostack.app.backup.BackupCreationResult
 import com.momostack.app.backup.BackupManager
 import com.momostack.app.backup.RestoreResult
-import com.momostack.app.ui.theme.EmeraldGreen
+import com.momostack.app.ui.theme.SuccessGreen
 import com.momostack.app.ui.theme.IndigoPrimary
 import com.momostack.app.ui.theme.Slate400
 import com.momostack.app.ui.theme.Slate500
@@ -219,14 +219,14 @@ fun BackupSubscreen(
                                 Icon(
                                     imageVector = Icons.Default.CheckCircle,
                                     contentDescription = null,
-                                    tint = EmeraldGreen,
+                                    tint = SuccessGreen,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
                                     text = "Ready in Downloads/MomoStack/${BackupManager.BACKUP_FILE_NAME}",
                                     style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
-                                    color = EmeraldGreen
+                                    color = SuccessGreen
                                 )
                             }
 
@@ -264,7 +264,7 @@ fun BackupSubscreen(
                     Icon(
                         imageVector = Icons.Default.FileDownload,
                         contentDescription = null,
-                        tint = EmeraldGreen,
+                        tint = SuccessGreen,
                         modifier = Modifier.size(22.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -297,7 +297,7 @@ fun BackupSubscreen(
                     },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isRestoring,
-                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen),
+                    colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     if (isRestoring) {

@@ -51,7 +51,7 @@ object BackupManager {
         val categories = categoryDao.getAllCategoriesList()
 
         val screenshotsList = try {
-            val sDao = ScreenshotVaultDatabase.getInstance(context).screenshotDao()
+            val sDao = ScreenshotVaultDatabase.getDatabase(context).screenshotDao()
             sDao.getAllScreenshotsList().map { s ->
                 ScreenshotBackupItem(
                     originalUri = s.originalUri,
@@ -199,7 +199,7 @@ object BackupManager {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setContentIntent(appPendingIntent)
-            .addAction(R.drawable.ic_momo_logo, "Share File", sharePendingIntent)
+            .addAction(R.drawable.ic_launcher_foreground, "Share File", sharePendingIntent)
             .build()
 
         notificationManager.notify(NOTIFICATION_ID_BACKUP, notification)
@@ -250,7 +250,7 @@ object BackupManager {
             var restoredScreenshots = 0
             if (payload.screenshots.isNotEmpty()) {
                 try {
-                    val sDao = ScreenshotVaultDatabase.getInstance(context).screenshotDao()
+                    val sDao = ScreenshotVaultDatabase.getDatabase(context).screenshotDao()
                     val sEntities = payload.screenshots.map { s ->
                         ScreenshotEntity(
                             localImagePath = "",
