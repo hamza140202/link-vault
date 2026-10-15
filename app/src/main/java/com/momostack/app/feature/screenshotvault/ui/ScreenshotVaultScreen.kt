@@ -67,13 +67,18 @@ fun ScreenshotVaultScreen(
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        val granted = permissions.values.all { it }
-        if (granted) {
+        val mediaGranted = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            permissions[android.Manifest.permission.READ_MEDIA_IMAGES] == true
+        } else {
+            permissions[android.Manifest.permission.READ_EXTERNAL_STORAGE] == true
+        }
+
+        if (mediaGranted) {
             viewModel.toggleAutoCapture(context, true)
             Toast.makeText(context, "Auto-Capture activated!", Toast.LENGTH_SHORT).show()
         } else {
             viewModel.toggleAutoCapture(context, false)
-            Toast.makeText(context, "Permissions required for auto-capture", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Storage permission required for auto-capture", Toast.LENGTH_SHORT).show()
         }
     }
 
