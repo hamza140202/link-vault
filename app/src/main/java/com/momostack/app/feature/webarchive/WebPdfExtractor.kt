@@ -154,64 +154,19 @@ object WebPdfExtractor {
 
         val adapter: PrintDocumentAdapter = webView.createPrintDocumentAdapter("momo_web_archive")
 
-        adapter.onLayout(
-            null,
+        android.print.WebPrintToPdfAdapter.printPdf(
+            adapter,
+            destFile,
             printAttributes,
-            CancellationSignal(),
-            object : PrintDocumentAdapter.LayoutResultCallback() {
-                override fun onLayoutFinished(info: android.print.PrintDocumentInfo?, changed: Boolean) {
-                    try {
-                        val fileDescriptor = ParcelFileDescriptor.open(
-                            destFile,
-                            ParcelFileDescriptor.MODE_CREATE or ParcelFileDescriptor.MODE_READ_WRITE
-                        )
-
-                        adapter.onWrite(
-                            arrayOf(PageRange.ALL_PAGES),
-                            fileDescriptor,
-                            CancellationSignal(),
-                            object : PrintDocumentAdapter.WriteResultCallback() {
-                                override fun onWriteFinished(pages: Array<out PageRange>?) {
-                                    try {
-                                        fileDescriptor.close()
-                                    } catch (_: Exception) {}
-
-                                    if (destFile.exists() && destFile.length() > 0) {
-                                        onSuccess()
-                                    } else {
-                                        onError("Generated PDF file is empty or missing")
-                                    }
-                                }
-
-                                override fun onWriteFailed(error: CharSequence?) {
-                                    try {
-                                        fileDescriptor.close()
-                                    } catch (_: Exception) {}
-                                    onError(error?.toString() ?: "Print adapter write failed")
-                                }
-
-                                override fun onWriteCancelled() {
-                                    try {
-                                        fileDescriptor.close()
-                                    } catch (_: Exception) {}
-                                    onError("Print adapter write cancelled")
-                                }
-                            }
-                        )
-                    } catch (e: Exception) {
-                        onError("Failed to open file descriptor: ${e.message}")
-                    }
+            object : android.print.WebPrintToPdfAdapter.Callback {
+                override fun onSuccess() {
+                    onSuccess()
                 }
 
-                override fun onLayoutFailed(error: CharSequence?) {
-                    onError(error?.toString() ?: "Print adapter layout failed")
+                override fun onError(error: String) {
+                    onError(error)
                 }
-
-                override fun onLayoutCancelled() {
-                    onError("Print adapter layout cancelled")
-                }
-            },
-            null
+            }
         )
     }
 }
