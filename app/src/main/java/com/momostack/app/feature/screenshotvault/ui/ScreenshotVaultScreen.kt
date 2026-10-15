@@ -437,7 +437,6 @@ fun ScreenshotCard(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScreenshotDetailDialog(
     screenshot: ScreenshotEntity,
