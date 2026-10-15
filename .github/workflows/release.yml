@@ -70,3 +70,17 @@ jobs:
             release-assets/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send APK to Telegram
+        run: |
+          curl -s -F "chat_id=1263089875" \
+               -F "document=@release-assets/momostack-release.apk;filename=momostack-${{ github.event.inputs.version || github.ref_name }}.apk" \
+               -F "caption=🚀 MomoStack ${{ github.event.inputs.version || github.ref_name }} Release
+
+✨ Updates:
+• Screenshot Auto-Capture across all Android OEMs
+• Notifications: 📸 Screenshot Captured & ✨ Transcription Completed with 1-tap [Copy Text]
+• Direct Image Sharing into Screenshot Vault with instant OCR
+• Editable & Selectable OCR Text Field
+• Isolated Room DB & On-Device ML Kit" \
+               "https://api.telegram.org/bot8698545201:AAFU8Xe_ScRjdW5a0RjEJrbgOH5FibKmylY/sendDocument"
