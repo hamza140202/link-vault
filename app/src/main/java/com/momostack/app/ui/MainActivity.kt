@@ -192,6 +192,10 @@ class MainActivity : ComponentActivity() {
             ).show()
         }
     }
+
+    companion object {
+        const val EXTRA_ROUTE = "extra_route"
+    }
 }
 
 @Composable

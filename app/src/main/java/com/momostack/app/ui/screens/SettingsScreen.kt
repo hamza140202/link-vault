@@ -131,9 +131,9 @@ fun SettingsScreen(
         SettingsSubscreen.SCREENSHOT_VAULT -> ScreenshotVaultScreen(
             onNavigateBack = { activeSubscreen = SettingsSubscreen.MAIN },
             onSaveAsNote = { noteText ->
-                viewModel.createNote(
-                    title = "Screenshot Note",
-                    content = noteText
+                viewModel.saveDirectNote(
+                    noteContent = noteText,
+                    title = "Screenshot Note"
                 )
             }
         )
