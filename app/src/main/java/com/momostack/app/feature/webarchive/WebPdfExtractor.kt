@@ -1,11 +1,8 @@
 package com.momostack.app.feature.webarchive
 
 import android.content.Context
-import android.os.CancellationSignal
 import android.os.Handler
 import android.os.Looper
-import android.os.ParcelFileDescriptor
-import android.print.PageRange
 import android.print.PrintAttributes
 import android.print.PrintDocumentAdapter
 import android.webkit.WebResourceError
@@ -19,7 +16,7 @@ import kotlin.coroutines.resume
 
 object WebPdfExtractor {
 
-    private const val TIMEOUT_MS = 30_000L
+    private const val TIMEOUT_MS = 35_000L
 
     suspend fun convertUrlToPdf(
         context: Context,
@@ -31,26 +28,30 @@ object WebPdfExtractor {
         mainHandler.post {
             var webView: WebView? = null
             var hasCompleted = false
+            var isRenderTriggered = false
+            var settleRunnable: Runnable? = null
 
-            fun finishWithSuccess(file: File) {
-                if (hasCompleted) return
-                hasCompleted = true
+            fun cleanup() {
+                settleRunnable?.let { mainHandler.removeCallbacks(it) }
+                settleRunnable = null
                 try {
                     webView?.stopLoading()
                     webView?.destroy()
                 } catch (_: Exception) {}
                 webView = null
+            }
+
+            fun finishWithSuccess(file: File) {
+                if (hasCompleted) return
+                hasCompleted = true
+                cleanup()
                 continuation.resume(Result.success(file))
             }
 
             fun finishWithError(error: Throwable) {
                 if (hasCompleted) return
                 hasCompleted = true
-                try {
-                    webView?.stopLoading()
-                    webView?.destroy()
-                } catch (_: Exception) {}
-                webView = null
+                cleanup()
                 if (destFile.exists()) {
                     destFile.delete()
                 }
@@ -83,9 +84,17 @@ object WebPdfExtractor {
                     override fun onPageFinished(v: WebView?, loadedUrl: String?) {
                         super.onPageFinished(v, loadedUrl)
 
-                        // Settle window for dynamic fonts and images
-                        mainHandler.postDelayed({
-                            if (hasCompleted || webView == null) return@postDelayed
+                        // Clear any pending settle runnables from previous onPageFinished invocations
+                        settleRunnable?.let { mainHandler.removeCallbacks(it) }
+
+                        if (hasCompleted || isRenderTriggered || webView == null) {
+                            return
+                        }
+
+                        // Settle window for dynamic fonts, CSS layout, and inline images (2000ms debounce)
+                        val runnable = Runnable {
+                            if (hasCompleted || isRenderTriggered || webView == null) return@Runnable
+                            isRenderTriggered = true
 
                             try {
                                 renderWebViewToPdf(
@@ -104,7 +113,9 @@ object WebPdfExtractor {
                                 mainHandler.removeCallbacks(timeoutRunnable)
                                 finishWithError(e)
                             }
-                        }, 1200)
+                        }
+                        settleRunnable = runnable
+                        mainHandler.postDelayed(runnable, 2000L)
                     }
 
                     override fun onReceivedError(
@@ -130,11 +141,7 @@ object WebPdfExtractor {
             continuation.invokeOnCancellation {
                 mainHandler.removeCallbacks(timeoutRunnable)
                 mainHandler.post {
-                    try {
-                        webView?.stopLoading()
-                        webView?.destroy()
-                    } catch (_: Exception) {}
-                    webView = null
+                    cleanup()
                 }
             }
         }

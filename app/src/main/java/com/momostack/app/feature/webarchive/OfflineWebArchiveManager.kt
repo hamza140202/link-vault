@@ -19,14 +19,22 @@ import java.io.File
 
 object OfflineWebArchiveManager {
 
+    private val activeArchiveJobs = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
     suspend fun archiveWebPage(
         context: Context,
         repository: LinkVaultRepository,
         item: LinkItem
     ): Result<File> = withContext(Dispatchers.IO) {
+        if (!activeArchiveJobs.add(item.id)) {
+            return@withContext Result.failure(IllegalStateException("Webpage is already being archived."))
+        }
+
         val notificationId = (item.id.hashCode() and 0x7FFFFFFF) % 10000 + 4000
         val archivesDir = File(context.filesDir, "web_archives").apply { mkdirs() }
         val destFile = File(archivesDir, "webdoc_${item.id}.pdf")
+
+        try {
 
         // 1. Mark as EXTRACTING
         repository.updateOfflineArchive(
@@ -67,7 +75,10 @@ object OfflineWebArchiveManager {
             showFailedNotification(context, notificationId, item.title.ifBlank { item.url }, result.exceptionOrNull()?.message)
             Result.failure(result.exceptionOrNull() ?: Exception("Unknown error archiving webpage"))
         }
+    } finally {
+        activeArchiveJobs.remove(item.id)
     }
+}
 
     fun getSharePdfIntent(context: Context, item: LinkItem): Intent? {
         val path = item.offlinePdfPath ?: return null
