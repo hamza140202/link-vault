@@ -14,7 +14,7 @@ def send_video(video_path):
         "• 3. *Screenshot Vault & On-Device OCR* (Smart Text Extractor)\n"
         "• 4. *Private Notes Page* (Fast distraction-free notes)\n"
         "• 5. *Full-Page Note Editor* (Checklists & snippets focus mode)\n"
-        "• 6. *Offline Web Reader* (Ad-free offline document view)\n\n"
+        "• 6. *Smart Categories Vault* (Organize links into topic & app folders)\n\n"
         "⚡ 100% genuine physical device captures in Goldie device frames."
     )
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendVideo"
@@ -31,17 +31,27 @@ def send_screenshots():
         ("store-assets/screenshots/03_screenshot_vault.png", "📱 *3. Smart Screenshot Vault*\nAuto-capture screenshots & transcribe text on-device with zero cloud telemetry."),
         ("store-assets/screenshots/04_notes_page.png", "📱 *4. Private Notes Page*\nInstant personal thoughts, reflections, and ideas with fast search."),
         ("store-assets/screenshots/05_note_editor.png", "📱 *5. Full-Page Note Editor*\nClean focus editor to draft notes, checklists, and snippets with live word counts."),
-        ("store-assets/screenshots/06_offline_reader.png", "📱 *6. Offline Webpage Reader*\nDistraction-free offline reader mode for saved articles without internet.")
+        ("store-assets/screenshots/06_categories_vault.png", "📱 *6. Smart Categories Vault*\nOrganize links into topic folders for Instagram, GitHub, Twitter & custom collections.")
     ]
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
+    import time
     for shot, cap in shots:
         if os.path.exists(shot):
             print(f"Uploading: {shot}...")
-            with open(shot, "rb") as f:
-                files = {"photo": f}
-                data = {"chat_id": CHAT_ID, "caption": cap, "parse_mode": "Markdown"}
-                resp = requests.post(url, data=data, files=files, timeout=60)
-                print("Photo Status:", resp.status_code, resp.json().get("ok"))
+            for attempt in range(5):
+                try:
+                    with open(shot, "rb") as f:
+                        files = {"photo": f}
+                        data = {"chat_id": CHAT_ID, "caption": cap, "parse_mode": "Markdown"}
+                        resp = requests.post(url, data=data, files=files, timeout=60)
+                        if resp.status_code == 200 and resp.json().get("ok"):
+                            print(f"Photo {shot} Status: 200 True")
+                            break
+                        else:
+                            print(f"Photo {shot} attempt {attempt+1} failed: {resp.text}")
+                except Exception as e:
+                    print(f"Photo {shot} attempt {attempt+1} exception: {e}")
+                time.sleep(2)
 
 def main():
     video_path = "store-assets/video/momostack_launch_ad.mp4"

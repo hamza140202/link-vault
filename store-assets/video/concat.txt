@@ -8,6 +8,6 @@ file 'D:/ansaribilal/link-vault/store-assets/screenshots/04_notes_page.png'
 duration 4
 file 'D:/ansaribilal/link-vault/store-assets/screenshots/05_note_editor.png'
 duration 4
-file 'D:/ansaribilal/link-vault/store-assets/screenshots/06_offline_reader.png'
+file 'D:/ansaribilal/link-vault/store-assets/screenshots/06_categories_vault.png'
 duration 4
-file 'D:/ansaribilal/link-vault/store-assets/screenshots/06_offline_reader.png'
+file 'D:/ansaribilal/link-vault/store-assets/screenshots/06_categories_vault.png'

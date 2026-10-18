@@ -7,7 +7,7 @@ SCREENSHOTS = [
     "store-assets/screenshots/03_screenshot_vault.png",
     "store-assets/screenshots/04_notes_page.png",
     "store-assets/screenshots/05_note_editor.png",
-    "store-assets/screenshots/06_offline_reader.png"
+    "store-assets/screenshots/06_categories_vault.png"
 ]
 MUSIC_TRACK = ".agents/skills/brag/assets/music/happy-beats-business-moves-vol-10-by-ende-dot-app.mp3"
 OUT_VIDEO = "store-assets/video/momostack_launch_ad.mp4"
