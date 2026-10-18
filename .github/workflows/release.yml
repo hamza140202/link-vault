@@ -33,8 +33,8 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Build Release APK
-        run: gradle assembleRelease --stacktrace
+      - name: Build Release APK and App Bundle (AAB)
+        run: gradle assembleRelease bundleRelease --stacktrace
 
       - name: Package Release Assets
         run: |
@@ -42,8 +42,12 @@ jobs:
           TAG_VER="${{ github.event.inputs.version || github.ref_name }}"
           cp app/build/outputs/apk/release/*.apk release-assets/momostack-${TAG_VER}.apk
           cp app/build/outputs/apk/release/*.apk release-assets/momostack-release.apk
+          if [ -f app/build/outputs/bundle/release/*.aab ]; then
+            cp app/build/outputs/bundle/release/*.aab release-assets/momostack-${TAG_VER}.aab
+            cp app/build/outputs/bundle/release/*.aab release-assets/momostack-release.aab
+          fi
           cd release-assets
-          sha256sum *.apk > SHA256SUMS.txt
+          sha256sum * > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
       - name: Create GitHub Release

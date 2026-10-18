@@ -99,6 +99,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Production Security Check: Log warning if environment exhibits tampering or active debugger
+        if (com.momostack.app.util.SecurityGuard.isDebuggerActive()) {
+            android.util.Log.w("MainActivity", "Warning: Application is running under an active debugging environment.")
+        }
+        if (com.momostack.app.util.SecurityGuard.isDeviceRooted()) {
+            android.util.Log.i("MainActivity", "Device root heuristics detected.")
+        }
+
         handleShareIntent(intent)
         handleExtraRoute(intent)
 

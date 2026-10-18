@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MomoStack - Privacy Policy</title>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 24px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        }
+        h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: var(--text-muted);
+            margin-bottom: 32px;
+            font-size: 0.95rem;
+        }
+        h2 {
+            font-size: 1.3rem;
+            margin-top: 28px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #E2E8F0;
+            padding-bottom: 6px;
+        }
+        p, li {
+            color: #334155;
+            font-size: 1rem;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        .badge {
+            display: inline-block;
+            background: #EEF2FF;
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <span class="badge">Local-First Guarantee</span>
+        <h1>Privacy Policy for MomoStack</h1>
+        <div class="subtitle">Effective Date: October 18, 2026 | Last Updated: October 18, 2026</div>
+
+        <h2>1. Overview & Commitment to Zero-Telemetry</h2>
+        <p><strong>MomoStack</strong> is engineered from the ground up as a <strong>local-first</strong> Android application. We believe your captured links, reading list, personal notes, and screenshots belong exclusively to you. MomoStack does not maintain any user accounts, databases, or cloud sync servers, and does not include any third-party tracking, analytics, or behavioral telemetry SDKs.</p>
+
+        <h2>2. Data We Process & How It Is Handled</h2>
+        <ul>
+            <li><strong>Saved Links & Metadata:</strong> When you save a link, MomoStack fetches title, description, and preview image directly from the public web page to your device via background WorkManager. No URL history is logged or transmitted to our servers.</li>
+            <li><strong>Personal Notes:</strong> All notes are stored purely inside a private, sandboxed SQLite database on your physical device.</li>
+            <li><strong>Screenshot OCR & Transcriptions:</strong> When the optional screenshot vault feature is enabled, OCR text extraction is conducted completely on-device using Google ML Kit. Your screenshots and extracted text never leave your phone.</li>
+            <li><strong>Offline Webpage PDFs:</strong> Webpage archiving converts HTML to PDF locally within an isolated sandboxed print adapter. The resulting PDF files are stored strictly within the app's private internal storage.</li>
+        </ul>
+
+        <h2>3. Permissions Used by MomoStack</h2>
+        <ul>
+            <li><strong>INTERNET & ACCESS_NETWORK_STATE:</strong> Used solely to fetch publicly available OpenGraph previews and render offline PDFs for links you explicitly save.</li>
+            <li><strong>POST_NOTIFICATIONS:</strong> Used exclusively to deliver local system alerts (such as OCR completion or offline PDF generation ready status).</li>
+            <li><strong>READ_MEDIA_IMAGES (Optional):</strong> Used only when auto-capture is toggled on to observe user-taken screenshots and provide immediate on-device transcription.</li>
+            <li><strong>FOREGROUND_SERVICE:</strong> Used to complete background tasks (such as offline page conversion) reliably without OS termination.</li>
+        </ul>
+
+        <h2>4. Data Sharing & Third Parties</h2>
+        <p>MomoStack <strong>does not share, sell, rent, or transfer</strong> any personal data, notes, screenshots, or browsing history to any third-party company, advertising network, or cloud provider.</p>
+
+        <h2>5. Data Retention, Portability & Deletion</h2>
+        <p>You retain 100% ownership and control over your data at all times:</p>
+        <ul>
+            <li><strong>One-Tap Deletion:</strong> Any link, note, screenshot, or PDF can be permanently deleted immediately from the app UI.</li>
+            <li><strong>Full JSON Backup & Export:</strong> You can export an unencrypted or encrypted complete backup of your entire library at any time to any location of your choosing.</li>
+            <li><strong>App Uninstall:</strong> Uninstalling MomoStack immediately purges all databases, cached preview images, and internal offline PDFs from your device.</li>
+        </ul>
+
+        <h2>6. Contact Us</h2>
+        <p>If you have any questions or feedback regarding this Privacy Policy or MomoStack's local-first architecture, please contact us at:</p>
+        <p><strong>Support Email:</strong> <a href="mailto:support@momostack.app">support@momostack.app</a></p>
+    </div>
+</body>
+</html>

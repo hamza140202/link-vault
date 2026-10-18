@@ -14,8 +14,8 @@ android {
         applicationId = "com.momostack.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 23
-        versionName = "1.0.15-beta4"
+        versionCode = 24
+        versionName = "1.0.15-rc1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -37,7 +37,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

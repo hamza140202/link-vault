@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!--
+      Google Play Store & Production Security:
+      Enforce strict HTTPS/TLS 1.2+ encryption for all network traffic.
+      Cleartext HTTP is disabled across the entire app to prevent MitM attacks.
+    -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
