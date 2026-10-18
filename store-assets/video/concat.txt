@@ -2,8 +2,10 @@ file 'D:/ansaribilal/link-vault/store-assets/screenshots/01_home_capture.png'
 duration 5
 file 'D:/ansaribilal/link-vault/store-assets/screenshots/02_offline_pdf.png'
 duration 5
-file 'D:/ansaribilal/link-vault/store-assets/screenshots/03_screenshot_vault.png'
+file 'D:/ansaribilal/link-vault/store-assets/screenshots/03_notes_editor.png'
 duration 5
-file 'D:/ansaribilal/link-vault/store-assets/screenshots/04_notes_editor.png'
+file 'D:/ansaribilal/link-vault/store-assets/screenshots/04_categories_vault.png'
 duration 5
-file 'D:/ansaribilal/link-vault/store-assets/screenshots/04_notes_editor.png'
+file 'D:/ansaribilal/link-vault/store-assets/screenshots/05_settings_privacy.png'
+duration 5
+file 'D:/ansaribilal/link-vault/store-assets/screenshots/05_settings_privacy.png'
