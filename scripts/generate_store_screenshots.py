@@ -1,5 +1,4 @@
 import os
-import sys
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 # Canvas dimensions (Standard Play Store 9:16 phone screenshot: 1080 x 2400)
@@ -38,34 +37,33 @@ def create_framed_screenshot(real_image_path, tag, headline, subhead, output_pat
     draw = ImageDraw.Draw(img)
 
     # 1. Subtle glowing ambient background
-    for r in range(500, 0, -25):
-        alpha_factor = (r / 500)
-        c = (int(30 + 35 * alpha_factor), int(35 + 40 * alpha_factor), int(70 + 70 * alpha_factor))
-        draw.ellipse([W // 2 - r, 320 - r, W // 2 + r, 320 + r], fill=c)
+    for r in range(520, 0, -25):
+        alpha_factor = (r / 520)
+        c = (int(25 + 40 * alpha_factor), int(30 + 45 * alpha_factor), int(65 + 75 * alpha_factor))
+        draw.ellipse([W // 2 - r, 310 - r, W // 2 + r, 310 + r], fill=c)
 
     # 2. Category Tag Pill
     font_tag = get_font(26, bold=True)
     tag_w = draw.textlength(tag, font=font_tag)
     tag_x = (W - tag_w) // 2
-    draw.rounded_rectangle([tag_x - 28, 110, tag_x + tag_w + 28, 165], radius=28, fill=INDIGO_DARK, outline=INDIGO, width=2)
-    draw.text((tag_x, 122), tag, font=font_tag, fill=WHITE)
+    draw.rounded_rectangle([tag_x - 28, 105, tag_x + tag_w + 28, 160], radius=28, fill=INDIGO_DARK, outline=INDIGO, width=2)
+    draw.text((tag_x, 117), tag, font=font_tag, fill=WHITE)
 
     # 3. Main Headline
     font_head = get_font(56, bold=True)
     head_w = draw.textlength(headline, font=font_head)
-    draw.text(((W - head_w) // 2, 195), headline, font=font_head, fill=WHITE)
+    draw.text(((W - head_w) // 2, 190), headline, font=font_head, fill=WHITE)
 
     # 4. Subhead
     font_sub = get_font(30, bold=False)
     sub_w = draw.textlength(subhead, font=font_sub)
-    draw.text(((W - sub_w) // 2, 275), subhead, font=font_sub, fill=SLATE_400)
+    draw.text(((W - sub_w) // 2, 270), subhead, font=font_sub, fill=SLATE_400)
 
-    # 5. Device Frame Setup
-    # Phone screen width: 880, aspect ratio approx 1080x2400 (h = 880 * 2400 / 1080 = 1955)
+    # 5. Device Frame Setup (Goldie / Modern Bezels)
     dev_w = 880
     dev_h = 1960
     dev_x = (W - dev_w) // 2
-    dev_y = 380
+    dev_y = 370
     bezel = 14
     corner = 58
 
@@ -107,7 +105,7 @@ def create_framed_screenshot(real_image_path, tag, headline, subhead, output_pat
     cam_x = dev_x + dev_w // 2
     cam_y = scr_y + 36
     draw.ellipse([cam_x - 13, cam_y - 13, cam_x + 13, cam_y + 13], fill=(8, 8, 12), outline=(30, 30, 40), width=2)
-    draw.ellipse([cam_x - 5, cam_y - 5, cam_x + 2, cam_y + 2], fill=(20, 25, 45)) # Lens glint
+    draw.ellipse([cam_x - 5, cam_y - 5, cam_x + 2, cam_y + 2], fill=(20, 25, 45)) # Lens reflection
 
     # Speaker Grill at top bezel
     draw.rounded_rectangle([cam_x - 45, dev_y + 5, cam_x + 45, dev_y + 9], radius=2, fill=(40, 45, 60))
@@ -125,38 +123,45 @@ def main():
     configs = [
         {
             "src": os.path.join(captures_dir, "01_real_home.png"),
-            "tag": "ALL-IN-ONE VAULT",
+            "tag": "UNIVERSAL CAPTURE",
             "head": "Save Anything. Find Fast.",
-            "sub": "Organize links, notes & media in your private vault",
+            "sub": "Organize links from Instagram, YouTube, GitHub & web browsers",
             "out": os.path.join(out_dir, "01_home_capture.png")
+        },
+        {
+            "src": os.path.join(captures_dir, "02_real_link_detail.png"),
+            "tag": "LINK INTELLIGENCE",
+            "head": "Deep Metadata & Actions",
+            "sub": "Long-press any link for rich tags, notes, and 1-tap offline export",
+            "out": os.path.join(out_dir, "02_link_detail.png")
+        },
+        {
+            "src": os.path.join(captures_dir, "03_real_screenshot_vault.png"),
+            "tag": "ON-DEVICE OCR",
+            "head": "Smart Screenshot Vault",
+            "sub": "Auto-extract text from screenshots with private on-device AI",
+            "out": os.path.join(out_dir, "03_screenshot_vault.png")
+        },
+        {
+            "src": os.path.join(captures_dir, "03_real_notes.png"),
+            "tag": "PRIVATE NOTES",
+            "head": "Distraction-Free Notes",
+            "sub": "Capture thoughts, reflections, and ideas with instant search",
+            "out": os.path.join(out_dir, "04_notes_page.png")
+        },
+        {
+            "src": os.path.join(captures_dir, "04b_real_editor_typed.png"),
+            "tag": "FOCUS EDITOR",
+            "head": "Full-Page Note Editor",
+            "sub": "Draft clean notes, checklists, and snippets with live word counts",
+            "out": os.path.join(out_dir, "05_note_editor.png")
         },
         {
             "src": os.path.join(captures_dir, "06_real_reader_mode.png"),
             "tag": "OFFLINE ARCHIVAL",
             "head": "Read Anywhere. Zero Ads.",
-            "sub": "Full-text reader view and offline document archives",
-            "out": os.path.join(out_dir, "02_offline_pdf.png")
-        },
-        {
-            "src": os.path.join(captures_dir, "04b_real_editor_typed.png"),
-            "tag": "PRIVATE NOTES",
-            "head": "Distraction-Free Notes",
-            "sub": "Rich markdown editor with your companion Momo watching",
-            "out": os.path.join(out_dir, "03_notes_editor.png")
-        },
-        {
-            "src": os.path.join(captures_dir, "02_real_categories.png"),
-            "tag": "SMART TAGS & STACKS",
-            "head": "Intelligent Organization",
-            "sub": "Filter by tags, domains, and content types instantly",
-            "out": os.path.join(out_dir, "04_categories_vault.png")
-        },
-        {
-            "src": os.path.join(captures_dir, "05_real_settings.png"),
-            "tag": "ZERO TELEMETRY",
-            "head": "100% Private & Local",
-            "sub": "Your data never leaves your device. SQLite on-device only.",
-            "out": os.path.join(out_dir, "05_settings_privacy.png")
+            "sub": "Distraction-free offline web reader mode without network connection",
+            "out": os.path.join(out_dir, "06_offline_reader.png")
         }
     ]
 

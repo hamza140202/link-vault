@@ -5,14 +5,17 @@ BOT_TOKEN = "8698545201:AAFU8Xe_ScRjdW5a0RjEJrbgOH5FibKmylY"
 CHAT_ID = "1263089875"
 
 def send_video(video_path):
-    print(f"Uploading video {video_path} to Telegram...")
+    print(f"Uploading launch video {video_path} to Telegram...")
     caption = (
         "🎬 *MomoStack Official Play Store Launch Ad*\n\n"
-        "✨ *Highlights:*\n"
-        "• 100% captured live from physical device (moto g85 5G)\n"
-        "• Framed in Goldie-style high-res device bezels\n"
-        "• Brag audio track integration\n"
-        "• Real app feed with saved Instagram, YouTube, and offline PDF cards"
+        "✨ *Features Showcased:*\n"
+        "• 1. *Universal Link Feed* (Instagram, YouTube, GitHub, articles)\n"
+        "• 2. *Link Intelligence Detail* (Long-press metadata inspection)\n"
+        "• 3. *Screenshot Vault & On-Device OCR* (Smart Text Extractor)\n"
+        "• 4. *Private Notes Page* (Fast distraction-free notes)\n"
+        "• 5. *Full-Page Note Editor* (Checklists & snippets focus mode)\n"
+        "• 6. *Offline Web Reader* (Ad-free offline document view)\n\n"
+        "⚡ 100% genuine physical device captures in Goldie device frames."
     )
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendVideo"
     with open(video_path, "rb") as f:
@@ -23,23 +26,17 @@ def send_video(video_path):
 
 def send_screenshots():
     shots = [
-        "store-assets/screenshots/01_home_capture.png",
-        "store-assets/screenshots/02_offline_pdf.png",
-        "store-assets/screenshots/03_notes_editor.png",
-        "store-assets/screenshots/04_categories_vault.png",
-        "store-assets/screenshots/05_settings_privacy.png"
+        ("store-assets/screenshots/01_home_capture.png", "📱 *1. Universal Link Vault*\nSave anything from Instagram, YouTube, GitHub & web browsers with automated metadata."),
+        ("store-assets/screenshots/02_link_detail.png", "📱 *2. Link Intelligence (Long-Press Detail)*\nLong-press any link to inspect automated tags, domain info, and trigger 1-tap offline export."),
+        ("store-assets/screenshots/03_screenshot_vault.png", "📱 *3. Smart Screenshot Vault*\nAuto-capture screenshots & transcribe text on-device with zero cloud telemetry."),
+        ("store-assets/screenshots/04_notes_page.png", "📱 *4. Private Notes Page*\nInstant personal thoughts, reflections, and ideas with fast search."),
+        ("store-assets/screenshots/05_note_editor.png", "📱 *5. Full-Page Note Editor*\nClean focus editor to draft notes, checklists, and snippets with live word counts."),
+        ("store-assets/screenshots/06_offline_reader.png", "📱 *6. Offline Webpage Reader*\nDistraction-free offline reader mode for saved articles without internet.")
     ]
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
-    captions = [
-        "📱 *Screenshot 1: Main Feed & Instant Capture*\nReal link cards, tags, and offline status indicators.",
-        "📱 *Screenshot 2: Offline Archival*\nDistraction-free offline reader view and web archives.",
-        "📱 *Screenshot 3: Private Notes & Momo Mascot*\nRich markdown editor with Momo mascot companionship.",
-        "📱 *Screenshot 4: Intelligent Categories*\nFilter by domains, tags, and media types in milliseconds.",
-        "📱 *Screenshot 5: Local-First Privacy & Settings*\nZero telemetry, on-device SQLite database, custom themes."
-    ]
-    for shot, cap in zip(shots, captions):
+    for shot, cap in shots:
         if os.path.exists(shot):
-            print(f"Uploading screenshot: {shot}...")
+            print(f"Uploading: {shot}...")
             with open(shot, "rb") as f:
                 files = {"photo": f}
                 data = {"chat_id": CHAT_ID, "caption": cap, "parse_mode": "Markdown"}
@@ -51,7 +48,7 @@ def main():
     if os.path.exists(video_path):
         send_video(video_path)
     send_screenshots()
-    print("Telegram asset delivery complete!")
+    print("Telegram delivery finished successfully!")
 
 if __name__ == "__main__":
     main()
