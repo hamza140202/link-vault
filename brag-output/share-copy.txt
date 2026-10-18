@@ -1,0 +1,4 @@
+We built MomoStack because your bookmarks and notes shouldn't disappear when you're offline. 100% local-first, zero telemetry, on-device OCR, and 1-tap offline web PDFs. 🥟📱
+
+Get it on Google Play or grab the open release on GitHub!
+https://github.com/hamza140202/link-vault/releases/tag/v1.0.15-rc1
