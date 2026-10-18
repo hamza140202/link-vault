@@ -156,6 +156,9 @@ object WebPdfExtractor {
         val printAttributes = PrintAttributes.Builder()
             .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
             .setResolution(PrintAttributes.Resolution("pdf_render", "pdf_render", 300, 300))
+            .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
+            .build()
+
         // Inject print-fidelity CSS to ensure full background colors, cards, and exact webpage appearance
         webView.evaluateJavascript(
             """

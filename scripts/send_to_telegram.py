@@ -22,11 +22,11 @@ def main():
     caption = (
         f"🚀 *MomoStack {version} Release*\n\n"
         "✨ *Updates:*\n"
-        "• *Auto-Capture Reliability*: Fixed ContentResolver sort order for Android 10+ and added SystemUI write delay.\n"
-        "• *Dual Notifications*: `📸 Screenshot Captured` and `✨ Transcription Completed` with 1-tap `[Copy Text]`.\n"
-        "• *Direct Image Sharing Intercept*: Shared screenshots/images go straight to Screenshot Vault and trigger OCR.\n"
-        "• *Editable & Selectable OCR Text*: Tap into transcription in detail sheet to edit or copy selected portions.\n"
-        "• *Isolated Engine*: Runs in private `screenshot_vault.db` with on-device ML Kit OCR."
+        "• *Link Share Intercept Fix*: Links shared from Chrome or web browsers save directly to the main stack (no accidental screenshot vault routing).\n"
+        "• *1-Click Copy Note*: One-tap copy button directly on note cards and note editor to copy whole note with title.\n"
+        "• *Dynamic Note Header*: Editor header displays the actual note title with clean ellipsis instead of static 'Edit Note'.\n"
+        "• *1-Click Offline Webpage PDF Saver*: Download icon on link cards archives entire webpages in background with notifications & in-app reader.\n"
+        "• *Pixel-Perfect PDF Styling*: Injected print CSS preserves colors, backgrounds, cards, and dark theme matching the live webpage."
     )
 
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument"
