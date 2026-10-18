@@ -40,20 +40,7 @@ class ShareCaptureActivity : ComponentActivity() {
             return
         }
 
-        val imageUri: android.net.Uri? = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra(Intent.EXTRA_STREAM, android.net.Uri::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            intent.getParcelableExtra(Intent.EXTRA_STREAM)
-        } ?: intent.clipData?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.uri
-
-        val isImageShare = intent.type?.startsWith("image/") == true || imageUri != null
-
-        if (isImageShare && imageUri != null) {
-            handleImageShare(imageUri)
-            return
-        }
-
+        // 1. First extract any shared text or URL
         var sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
             ?: intent.getStringExtra(Intent.EXTRA_SUBJECT)
             ?: ""
@@ -63,9 +50,30 @@ class ShareCaptureActivity : ComponentActivity() {
         if (clipData != null && clipData.itemCount > 0) {
             val item = clipData.getItemAt(0)
             if (sharedText.isBlank()) {
-                sharedText = item.text?.toString() ?: item.coerceToText(this).toString()
+                sharedText = item.text?.toString() ?: ""
             }
             htmlContent = item.htmlText
+        }
+
+        // Check if shared text contains a URL (e.g. Chrome or browser link share)
+        val hasUrl = sharedText.isNotBlank() && UrlExtractor.extract(sharedText).url != null
+
+        // 2. Check for image share only when not a URL share
+        val imageUri: android.net.Uri? = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(Intent.EXTRA_STREAM, android.net.Uri::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableExtra(Intent.EXTRA_STREAM)
+        }
+
+        val isImageShare = !hasUrl && (
+            intent.type?.startsWith("image/") == true ||
+            (imageUri != null && contentResolver.getType(imageUri)?.startsWith("image/") == true)
+        )
+
+        if (isImageShare && imageUri != null) {
+            handleImageShare(imageUri)
+            return
         }
 
         if (sharedText.isBlank()) {

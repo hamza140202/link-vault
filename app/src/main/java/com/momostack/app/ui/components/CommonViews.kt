@@ -23,7 +23,9 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.OpenInBrowser
+import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
@@ -32,6 +34,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -72,6 +75,8 @@ fun LinkCard(
     onOpenBrowser: () -> Unit,
     onShare: (() -> Unit)? = null,
     onRefresh: (() -> Unit)? = null,
+    onSaveOffline: (() -> Unit)? = null,
+    onOpenReader: (() -> Unit)? = null,
     cardDensity: String = "Comfortable",
     showThumbnails: Boolean = true,
     showDomain: Boolean = true,
@@ -299,6 +304,52 @@ fun LinkCard(
                                     tint = Slate400,
                                     modifier = Modifier.size(16.dp)
                                 )
+                            }
+                        }
+
+                        // 3b. Offline Web PDF Saver / Reader
+                        if (item.url.isNotBlank() && (item.url.startsWith("http://") || item.url.startsWith("https://"))) {
+                            when (item.offlinePdfStatus) {
+                                com.momostack.app.data.model.OfflineArchiveStatus.READY -> {
+                                    IconButton(
+                                        onClick = { onOpenReader?.invoke() },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.PictureAsPdf,
+                                            contentDescription = "Open offline reader",
+                                            tint = IndigoPrimary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
+                                com.momostack.app.data.model.OfflineArchiveStatus.EXTRACTING -> {
+                                    Box(
+                                        modifier = Modifier.size(24.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(14.dp),
+                                            strokeWidth = 2.dp,
+                                            color = IndigoPrimary
+                                        )
+                                    }
+                                }
+                                else -> {
+                                    if (onSaveOffline != null) {
+                                        IconButton(
+                                            onClick = onSaveOffline,
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Filled.FileDownload,
+                                                contentDescription = "Save webpage offline",
+                                                tint = Slate400,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
 

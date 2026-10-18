@@ -141,14 +141,36 @@ class MainActivity : ComponentActivity() {
     private fun handleShareIntent(intent: Intent?) {
         if (intent == null || intent.action != Intent.ACTION_SEND) return
 
+        // 1. First extract any shared text or URL
+        var sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
+            ?: intent.getStringExtra(Intent.EXTRA_SUBJECT)
+            ?: ""
+
+        var htmlContent: String? = null
+        val clipData = intent.clipData
+        if (clipData != null && clipData.itemCount > 0) {
+            val item = clipData.getItemAt(0)
+            if (sharedText.isBlank()) {
+                sharedText = item.text?.toString() ?: ""
+            }
+            htmlContent = item.htmlText
+        }
+
+        // Check if shared text contains a URL (e.g. Chrome link share)
+        val hasUrl = sharedText.isNotBlank() && UrlExtractor.extract(sharedText).url != null
+
+        // 2. Only treat as image share if it's not a URL share
         val imageUri: android.net.Uri? = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra(Intent.EXTRA_STREAM, android.net.Uri::class.java)
         } else {
             @Suppress("DEPRECATION")
             intent.getParcelableExtra(Intent.EXTRA_STREAM)
-        } ?: intent.clipData?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.uri
+        }
 
-        val isImageShare = intent.type?.startsWith("image/") == true || imageUri != null
+        val isImageShare = !hasUrl && (
+            intent.type?.startsWith("image/") == true ||
+            (imageUri != null && contentResolver.getType(imageUri)?.startsWith("image/") == true)
+        )
 
         if (isImageShare && imageUri != null) {
             lifecycleScope.launch {
@@ -164,20 +186,6 @@ class MainActivity : ComponentActivity() {
                 Toast.makeText(applicationContext, "📸 Saved to Screenshot Vault", Toast.LENGTH_SHORT).show()
             }
             return
-        }
-
-        var sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
-            ?: intent.getStringExtra(Intent.EXTRA_SUBJECT)
-            ?: ""
-
-        var htmlContent: String? = null
-        val clipData = intent.clipData
-        if (clipData != null && clipData.itemCount > 0) {
-            val item = clipData.getItemAt(0)
-            if (sharedText.isBlank()) {
-                sharedText = item.text?.toString() ?: item.coerceToText(this).toString()
-            }
-            htmlContent = item.htmlText
         }
 
         if (sharedText.isBlank()) return
@@ -307,6 +315,7 @@ fun MainAppScaffold(
                 MainTab.HOME -> HomeScreen(
                     viewModel = viewModel,
                     onItemClick = { item -> selectedItemForDetail = item },
+                    onOpenReader = { item -> selectedItemForOfflineReader = item },
                     modifier = Modifier.padding(innerPadding)
                 )
                 MainTab.CATEGORIES -> CategoriesScreen(

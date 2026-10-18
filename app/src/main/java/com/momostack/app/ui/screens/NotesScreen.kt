@@ -31,6 +31,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Share
@@ -243,6 +244,30 @@ fun NotesScreen(
                                         )
 
                                         Row(verticalAlignment = Alignment.CenterVertically) {
+                                            // 1-Click Copy Note
+                                            IconButton(
+                                                onClick = {
+                                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                                    val textToCopy = if (item.title.isNotBlank() && !noteBody.startsWith(item.title)) {
+                                                        "${item.title}\n\n$noteBody"
+                                                    } else {
+                                                        noteBody
+                                                    }
+                                                    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("MomoStack Note", textToCopy))
+                                                    Toast.makeText(context, "📋 Note copied to clipboard!", Toast.LENGTH_SHORT).show()
+                                                },
+                                                modifier = Modifier.size(28.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Filled.ContentCopy,
+                                                    contentDescription = "Copy Note",
+                                                    tint = Slate400,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+
+                                            Spacer(modifier = Modifier.width(4.dp))
+
                                             // Share Button on Note Card
                                             IconButton(
                                                 onClick = {
@@ -407,7 +432,10 @@ fun FullPageNoteEditor(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -427,11 +455,13 @@ fun FullPageNoteEditor(
                         modifier = Modifier.padding(horizontal = 4.dp)
                     )
 
-                    Column {
+                    Column(modifier = Modifier.weight(1f, fill = false)) {
                         Text(
-                            text = if (isNewNote) "New Note" else "Edit Note",
+                            text = if (isNewNote) "New Note" else title.ifBlank { "Untitled Note" },
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Text(
                             text = "$wordCount words · $charCount chars",
@@ -442,6 +472,26 @@ fun FullPageNoteEditor(
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    // 1-Click Copy Note
+                    IconButton(
+                        onClick = {
+                            if (text.isNotBlank()) {
+                                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                val textToCopy = if (title.isNotBlank()) "$title\n\n$text" else text
+                                clipboard.setPrimaryClip(android.content.ClipData.newPlainText("MomoStack Note", textToCopy))
+                                Toast.makeText(context, "📋 Note copied to clipboard!", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(context, "Note is empty", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.ContentCopy,
+                            contentDescription = "Copy note",
+                            tint = Slate500
+                        )
+                    }
+
                     // Smart Paste Button
                     IconButton(
                         onClick = { pasteFormattedFromClipboard() }

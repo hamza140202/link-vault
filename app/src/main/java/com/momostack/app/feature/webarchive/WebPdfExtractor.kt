@@ -156,8 +156,22 @@ object WebPdfExtractor {
         val printAttributes = PrintAttributes.Builder()
             .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
             .setResolution(PrintAttributes.Resolution("pdf_render", "pdf_render", 300, 300))
-            .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
-            .build()
+        // Inject print-fidelity CSS to ensure full background colors, cards, and exact webpage appearance
+        webView.evaluateJavascript(
+            """
+            (function() {
+                var style = document.createElement('style');
+                style.type = 'text/css';
+                style.innerHTML = '@media print { *, *::before, *::after { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; } }';
+                if (document.head) {
+                    document.head.appendChild(style);
+                } else if (document.body) {
+                    document.body.appendChild(style);
+                }
+            })();
+            """.trimIndent(),
+            null
+        )
 
         val adapter: PrintDocumentAdapter = webView.createPrintDocumentAdapter("momo_web_archive")
 

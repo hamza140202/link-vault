@@ -69,6 +69,7 @@ import com.momostack.app.ui.viewmodel.VaultViewModel
 fun HomeScreen(
     viewModel: VaultViewModel,
     onItemClick: (LinkItem) -> Unit,
+    onOpenReader: ((LinkItem) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val items by viewModel.items.collectAsState()
@@ -308,6 +309,13 @@ fun HomeScreen(
                                         context.startActivity(intent)
                                     } catch (_: Exception) {}
                                 }
+                            },
+                            onSaveOffline = {
+                                viewModel.archiveWebPage(context, item)
+                                Toast.makeText(context, "📄 Saving webpage offline in background...", Toast.LENGTH_SHORT).show()
+                            },
+                            onOpenReader = {
+                                onOpenReader?.invoke(item)
                             },
                             cardDensity = appearancePrefs.cardDensity,
                             showThumbnails = appearancePrefs.showThumbnails,
