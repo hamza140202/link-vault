@@ -3,4 +3,6 @@
     <files-path name="web_archives" path="web_archives/" />
     <files-path name="screenshots" path="screenshots/" />
     <files-path name="backups" path="backups/" />
+    <files-path name="exported_notes" path="exported_notes/" />
+    <cache-path name="cache_exports" path="exports/" />
 </paths>
